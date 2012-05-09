@@ -39,6 +39,8 @@ public interface WebKeys {
 
 	public static final String CURRENT_URL = "CURRENT_URL";
 
+	public static final String EXTEND_SESSION = "EXTEND_SESSION";
+
 	public static final String FILE_ITEM_THRESHOLD_SIZE_EXCEEDED = "FILE_ITEM_THRESHOLD_SIZE_EXCEEDED";
 
 	public static final String FORGOT_PASSWORD_REMINDER_ATTEMPTS = "FORGOT_PASSWORD_REMINDER_ATTEMPTS";
@@ -83,6 +85,8 @@ public interface WebKeys {
 
 	public static final String PAGE_TOP = "LIFERAY_SHARED_PAGE_TOP";
 
+	public static final String PARALLEL_RENDERING_MERGE_LOCK = "PARALLEL_RENDERING_MERGE_LOCK";
+
 	public static final String PORTLET_CONFIGURATOR_VISIBILITY = "PORTLET_CONFIGURATOR_VISIBILITY";
 
 	public static final String PORTLET_DECORATE = "PORTLET_DECORATE";
@@ -95,6 +99,8 @@ public interface WebKeys {
 
 	public static final String REDIRECT = "REDIRECT";
 
+	public static final String RENDER_PATH = "RENDER_PATH";
+
 	public static final String RENDER_PORTLET = "RENDER_PORTLET";
 
 	public static final String RENDER_PORTLET_COLUMN_COUNT = "RENDER_PORTLET_COLUMN_COUNT";
@@ -102,8 +108,6 @@ public interface WebKeys {
 	public static final String RENDER_PORTLET_COLUMN_ID = "RENDER_PORTLET_COLUMN_ID";
 
 	public static final String RENDER_PORTLET_COLUMN_POS = "RENDER_PORTLET_COLUMN_POS";
-
-	public static final String RENDER_PORTLET_QUERY_STRING = "RENDER_PORTLET_QUERY_STRING";
 
 	public static final String RENDER_PORTLET_RESOURCE = "RENDER_PORTLET_RESOURCE";
 

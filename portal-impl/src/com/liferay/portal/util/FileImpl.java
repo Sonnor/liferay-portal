@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.Tika;
@@ -142,7 +143,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		}
 		else {
 			if ((destination.getParentFile() != null) &&
-				(!destination.getParentFile().exists())) {
+				!destination.getParentFile().exists()) {
 
 				destination.getParentFile().mkdirs();
 			}
@@ -292,9 +293,11 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 			}
 
 			if (forkProcess) {
-				text = ProcessExecutor.execute(
-					new ExtractTextProcessCallable(getBytes(is)),
-					ClassPathUtil.getPortalClassPath());
+				Future<String> future = ProcessExecutor.execute(
+					ClassPathUtil.getPortalClassPath(),
+					new ExtractTextProcessCallable(getBytes(is)));
+
+				text = future.get();
 			}
 			else {
 				text = tika.parseToString(is);
@@ -443,8 +446,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 			pos = fullFileName.lastIndexOf(CharPool.BACK_SLASH);
 		}
 
-		String shortFileName = fullFileName.substring(
-			pos + 1, fullFileName.length());
+		String shortFileName = fullFileName.substring(pos + 1);
 
 		return shortFileName;
 	}
@@ -758,9 +760,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		write(file, s, false);
 	}
 
-	public void write(File file, String s, boolean lazy)
-		throws IOException {
-
+	public void write(File file, String s, boolean lazy) throws IOException {
 		write(file, s, lazy, false);
 	}
 

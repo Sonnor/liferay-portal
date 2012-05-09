@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -58,6 +59,7 @@ import com.liferay.portlet.documentlibrary.model.DLFileVersion;
 import com.liferay.portlet.documentlibrary.model.DLFolder;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
+import com.liferay.portlet.documentlibrary.service.DLAppServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryMetadataLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeServiceUtil;
@@ -70,6 +72,7 @@ import com.liferay.portlet.documentlibrary.util.DLProcessorThreadLocal;
 import com.liferay.portlet.documentlibrary.util.DLUtil;
 import com.liferay.portlet.dynamicdatamapping.lar.DDMPortletDataHandlerImpl;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
+import com.liferay.portlet.dynamicdatamapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.portlet.dynamicdatamapping.service.persistence.DDMStructureUtil;
 import com.liferay.portlet.dynamicdatamapping.storage.Fields;
 import com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil;
@@ -106,7 +109,9 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		FileVersion fileVersion = fileEntry.getFileVersion();
 
-		if (fileVersion.getStatus() != WorkflowConstants.STATUS_APPROVED) {
+		if ((fileVersion.getStatus() != WorkflowConstants.STATUS_APPROVED ) &&
+			(fileVersion.getStatus() != WorkflowConstants.STATUS_IN_TRASH)) {
+
 			return;
 		}
 
@@ -304,12 +309,10 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		FileEntry importedFileEntry = null;
 
-		String titleWithExtension = fileEntry.getTitle();
+		String titleWithExtension = DLUtil.getTitleWithExtension(fileEntry);
 		String extension = fileEntry.getExtension();
 
-		if (!titleWithExtension.endsWith(StringPool.PERIOD + extension)) {
-			titleWithExtension += StringPool.PERIOD + extension;
-		}
+		String dotExtension = StringPool.PERIOD + extension;
 
 		if (portletDataContext.isDataStrategyMirror()) {
 			FileEntry existingFileEntry = FileEntryUtil.fetchByUUID_R(
@@ -318,9 +321,11 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			FileVersion fileVersion = fileEntry.getFileVersion();
 
 			if (existingFileEntry == null) {
+				String fileEntryTitle = fileEntry.getTitle();
+
 				FileEntry existingTitleFileEntry = FileEntryUtil.fetchByR_F_T(
 					portletDataContext.getScopeGroupId(), folderId,
-					fileEntry.getTitle());
+					fileEntryTitle);
 
 				if (existingTitleFileEntry != null) {
 					if (portletDataContext.
@@ -330,41 +335,51 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 							existingTitleFileEntry.getFileEntryId());
 					}
 					else {
-						String originalTitle = fileEntry.getTitle();
-						String dotExtension = StringPool.PERIOD + extension;
+						boolean titleHasExtension = false;
 
-						if (originalTitle.endsWith(dotExtension)) {
-							int pos = originalTitle.lastIndexOf(dotExtension);
+						if (fileEntryTitle.endsWith(dotExtension)) {
+							fileEntryTitle = FileUtil.stripExtension(
+								fileEntryTitle);
 
-							originalTitle = originalTitle.substring(0, pos);
+							titleHasExtension = true;
 						}
 
 						for (int i = 1;; i++) {
-							titleWithExtension =
-								originalTitle + StringPool.SPACE + i +
-									dotExtension;
+							fileEntryTitle += StringPool.SPACE + i;
 
-							existingTitleFileEntry = FileEntryUtil.findByR_F_T(
+							titleWithExtension = fileEntryTitle + dotExtension;
+
+							existingTitleFileEntry = FileEntryUtil.fetchByR_F_T(
 								portletDataContext.getScopeGroupId(), folderId,
 								titleWithExtension);
 
 							if (existingTitleFileEntry == null) {
+								if (titleHasExtension) {
+									fileEntryTitle += dotExtension;
+								}
+
 								break;
 							}
 						}
 					}
 				}
 
-				serviceContext.setUuid(fileEntry.getUuid());
-
 				serviceContext.setAttribute(
 					"fileVersionUuid", fileVersion.getUuid());
+				serviceContext.setUuid(fileEntry.getUuid());
 
 				importedFileEntry = DLAppLocalServiceUtil.addFileEntry(
 					userId, portletDataContext.getScopeGroupId(), folderId,
-					titleWithExtension, fileEntry.getMimeType(),
-					fileEntry.getTitle(), fileEntry.getDescription(), null, is,
-					fileEntry.getSize(), serviceContext);
+					titleWithExtension, fileEntry.getMimeType(), fileEntryTitle,
+					fileEntry.getDescription(), null, is, fileEntry.getSize(),
+					serviceContext);
+
+				if (fileVersion.getStatus() ==
+						WorkflowConstants.STATUS_IN_TRASH) {
+
+					importedFileEntry = DLAppServiceUtil.moveFileEntryToTrash(
+						importedFileEntry.getFileEntryId());
+				}
 			}
 			else {
 				FileVersion latestExistingFileVersion =
@@ -433,8 +448,8 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 					title += StringPool.PERIOD + titleParts[1];
 				}
 
-				if (!title.endsWith(StringPool.PERIOD + extension)) {
-					title += StringPool.PERIOD + extension;
+				if (!title.endsWith(dotExtension)) {
+					title += dotExtension;
 				}
 
 				importedFileEntry = DLAppLocalServiceUtil.addFileEntry(
@@ -509,8 +524,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 	public PortletDataHandlerControl[] getExportMetadataControls() {
 		return new PortletDataHandlerControl[] {
 			new PortletDataHandlerBoolean(
-				_NAMESPACE, "folders-and-documents", true,
-				_metadataControls)
+				_NAMESPACE, "folders-and-documents", true, _metadataControls)
 		};
 	}
 
@@ -894,13 +908,13 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 	}
 
 	/**
-	 * @see {@link PortletImporter#getAssetCategoryName(String, long, String,
-	 *      int)}
+	 * @see {@link PortletImporter#getAssetCategoryName(String, long, long,
+	 *      String, int)}
 	 * @see {@link PortletImporter#getAssetVocabularyName(String, long, String,
 	 *      int)}
 	 */
 	protected static String getFileEntryTypeName(
-			String uuid, long companyId, long groupId, String name, int count)
+			String uuid, long groupId, String name, int count)
 		throws Exception {
 
 		DLFileEntryType dlFileEntryType = DLFileEntryTypeUtil.fetchByG_N(
@@ -918,7 +932,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		name = StringUtil.appendParentheticalSuffix(name, count);
 
-		return getFileEntryTypeName(uuid, companyId, groupId, name, ++count);
+		return getFileEntryTypeName(uuid, groupId, name, ++count);
 	}
 
 	protected static String getFileEntryTypePath(
@@ -965,8 +979,8 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 	}
 
 	/**
-	 * @see {@link PortletImporter#getAssetCategoryName(String, long, String,
-	 *      int)}
+	 * @see {@link PortletImporter#getAssetCategoryName(String, long, long,
+	 *      String, int)}
 	 * @see {@link PortletImporter#getAssetVocabularyName(String, long, String,
 	 *      int)}
 	 */
@@ -1065,8 +1079,8 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			dlFileEntryType.getUserUuid());
 
 		String name = getFileEntryTypeName(
-			dlFileEntryType.getUuid(), portletDataContext.getCompanyId(),
-			portletDataContext.getScopeGroupId(), dlFileEntryType.getName(), 2);
+			dlFileEntryType.getUuid(), portletDataContext.getScopeGroupId(),
+			dlFileEntryType.getName(), 2);
 
 		List<Element> structureElements = fileEntryTypeElement.elements(
 			"structure");
@@ -1127,6 +1141,30 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		portletDataContext.importClassedModel(
 			dlFileEntryType, importedDLFileEntryType, _NAMESPACE);
+
+		String importedDLFileEntryDDMStructureKey = DLUtil.getDDMStructureKey(
+			importedDLFileEntryType);
+
+		List<DDMStructure> ddmStructures =
+			importedDLFileEntryType.getDDMStructures();
+
+		for (DDMStructure ddmStructure : ddmStructures) {
+			String ddmStructureKey = ddmStructure.getStructureKey();
+
+			if (!DLUtil.isAutoGeneratedDLFileEntryTypeDDMStructureKey(
+					ddmStructureKey)) {
+
+				continue;
+			}
+
+			if (ddmStructureKey.equals(importedDLFileEntryDDMStructureKey)) {
+				continue;
+			}
+
+			ddmStructure.setStructureKey(importedDLFileEntryDDMStructureKey);
+
+			DDMStructureLocalServiceUtil.updateDDMStructure(ddmStructure);
+		}
 	}
 
 	protected static void importFileRank(

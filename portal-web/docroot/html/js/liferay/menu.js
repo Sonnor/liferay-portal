@@ -276,7 +276,11 @@ AUI.add(
 						trigger.addClass(CSS_STATE_ACTIVE);
 					}
 
-					overlay.bodyNode.focusManager.focus(0);
+					var focusManager = overlay.bodyNode.focusManager;
+
+					if (focusManager) {
+						focusManager.focus(0);
+					}
 				}
 			},
 
@@ -384,11 +388,13 @@ AUI.add(
 					bodyNode.on(
 						'key',
 						function(event) {
-							var anchor = instance._activeTrigger.one(SELECTOR_ANCHOR);
+							var activeTrigger = instance._activeTrigger;
 
-							instance._closeActiveMenu();
+							if (activeTrigger) {
+								var anchor = activeTrigger.one(SELECTOR_ANCHOR);
 
-							if (anchor) {
+								instance._closeActiveMenu();
+
 								anchor.focus();
 							}
 						},
@@ -472,7 +478,11 @@ AUI.add(
 					liveSearch.after(
 						'search',
 						function(event) {
-							bodyNode.focusManager.refresh();
+							var focusManager = bodyNode.focusManager;
+
+							if (focusManager) {
+								focusManager.refresh();
+							}
 						},
 						instance
 					);
@@ -490,6 +500,8 @@ AUI.add(
 			function(event) {
 				var instance = Menu._INSTANCE;
 
+				var handles = instance._handles;
+
 				var trigger = event.currentTarget;
 
 				var activeTrigger = instance._activeTrigger;
@@ -504,12 +516,17 @@ AUI.add(
 					instance._activeMenu = menu;
 					instance._activeTrigger = trigger;
 
-					if (!instance._handles.length) {
-						instance._handles.push(
-							Liferay.on('portletDragStart', instance._closeActiveMenu, instance),
+					if (!handles.length) {
+						handles.push(
 							A.getWin().on('resize', A.debounce(instance._positionActiveMenu, 200, instance)),
 							A.getDoc().on(EVENT_CLICK, instance._closeActiveMenu, instance)
 						);
+
+						var DDM = A.DD && A.DD.DDM;
+
+						if (DDM) {
+							handles.push(DDM.on('ddm:start', instance._closeActiveMenu, instance));
+						}
 					}
 
 					instance._positionActiveMenu();

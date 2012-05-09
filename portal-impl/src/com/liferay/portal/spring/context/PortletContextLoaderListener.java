@@ -17,13 +17,10 @@ package com.liferay.portal.spring.context;
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.kernel.bean.BeanLocator;
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
-import com.liferay.portal.kernel.concurrent.LockRegistry;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletClassLoaderUtil;
-import com.liferay.portal.kernel.util.ContextPathUtil;
 import com.liferay.portal.kernel.util.MethodCache;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.lang.reflect.Method;
 
@@ -42,17 +39,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * @see    PortletContextLoader
  */
 public class PortletContextLoaderListener extends ContextLoaderListener {
-
-	public static String getLockKey(ServletContext servletContext) {
-		String contextPath = ContextPathUtil.getContextPath(servletContext);
-
-		return getLockKey(contextPath);
-	}
-
-	public static String getLockKey(String contextPath) {
-		return PortletContextLoaderListener.class.getName().concat(
-			StringPool.PERIOD).concat(contextPath);
-	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent servletContextEvent) {
@@ -95,14 +81,7 @@ public class PortletContextLoaderListener extends ContextLoaderListener {
 		servletContext.removeAttribute(
 			WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
 
-		try {
-			super.contextInitialized(servletContextEvent);
-		}
-		finally {
-			String lockKey = getLockKey(servletContext);
-
-			LockRegistry.freeLock(lockKey, lockKey, true);
-		}
+		super.contextInitialized(servletContextEvent);
 
 		PortletBeanFactoryCleaner.readBeans();
 

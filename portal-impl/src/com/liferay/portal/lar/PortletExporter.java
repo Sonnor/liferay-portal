@@ -65,10 +65,10 @@ import com.liferay.portlet.asset.model.AssetCategoryProperty;
 import com.liferay.portlet.asset.model.AssetTag;
 import com.liferay.portlet.asset.model.AssetTagProperty;
 import com.liferay.portlet.asset.model.AssetVocabulary;
+import com.liferay.portlet.asset.service.AssetCategoryLocalServiceUtil;
 import com.liferay.portlet.asset.service.AssetCategoryPropertyLocalServiceUtil;
-import com.liferay.portlet.asset.service.AssetCategoryServiceUtil;
+import com.liferay.portlet.asset.service.AssetTagLocalServiceUtil;
 import com.liferay.portlet.asset.service.AssetTagPropertyLocalServiceUtil;
-import com.liferay.portlet.asset.service.AssetTagServiceUtil;
 import com.liferay.portlet.asset.service.persistence.AssetCategoryUtil;
 import com.liferay.portlet.asset.service.persistence.AssetVocabularyUtil;
 import com.liferay.portlet.expando.model.ExpandoColumn;
@@ -167,8 +167,6 @@ public class PortletExporter {
 			parameterMap, PortletDataHandlerKeys.PORTLET_SETUP);
 		boolean exportPortletUserPreferences = MapUtil.getBoolean(
 			parameterMap, PortletDataHandlerKeys.PORTLET_USER_PREFERENCES);
-		boolean exportUserPermissions = MapUtil.getBoolean(
-			parameterMap, PortletDataHandlerKeys.USER_PERMISSIONS);
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Export categories " + exportCategories);
@@ -182,7 +180,6 @@ public class PortletExporter {
 			_log.debug(
 				"Export portlet user preferences " +
 					exportPortletUserPreferences);
-			_log.debug("Export user permissions " + exportUserPermissions);
 		}
 
 		if (exportPortletDataAll) {
@@ -280,8 +277,8 @@ public class PortletExporter {
 		exportPortlet(
 			portletDataContext, layoutCache, portletId, layout, rootElement,
 			defaultUserId, exportPermissions, exportPortletArchivedSetups,
-			exportPortletData, exportPortletSetup, exportPortletUserPreferences,
-			exportUserPermissions);
+			exportPortletData, exportPortletSetup,
+			exportPortletUserPreferences);
 
 		if (exportCategories) {
 			exportAssetCategories(portletDataContext);
@@ -333,15 +330,23 @@ public class PortletExporter {
 			PortletDataContext portletDataContext, Element rootElement)
 		throws Exception {
 
+		Element assetsElement = rootElement.element("assets");
+
+		if (assetsElement == null) {
+			assetsElement = rootElement.addElement("assets");
+		}
+
+		Element assetCategoriesElement = rootElement.element("categories");
+
+		if (assetCategoriesElement == null) {
+			assetCategoriesElement = rootElement.addElement("categories");
+		}
+
 		Element assetVocabulariesElement = rootElement.element("vocabularies");
 
 		if (assetVocabulariesElement == null) {
 			assetVocabulariesElement = rootElement.addElement("vocabularies");
 		}
-
-		Element assetsElement = rootElement.addElement("assets");
-
-		Element assetCategoriesElement = rootElement.addElement("categories");
 
 		Map<String, String[]> assetCategoryUuidsMap =
 			portletDataContext.getAssetCategoryUuidsMap();
@@ -363,7 +368,7 @@ public class PortletExporter {
 				"category-uuids", StringUtil.merge(entry.getValue()));
 
 			List<AssetCategory> assetCategories =
-				AssetCategoryServiceUtil.getCategories(className, classPK);
+				AssetCategoryLocalServiceUtil.getCategories(className, classPK);
 
 			for (AssetCategory assestCategory : assetCategories) {
 				exportAssetCategory(
@@ -400,6 +405,13 @@ public class PortletExporter {
 
 		Element assetCategoryElement = assetCategoriesElement.addElement(
 			"category");
+
+		Group companyGroup = GroupLocalServiceUtil.getCompanyGroup(
+			assetCategory.getCompanyId());
+
+		if (assetCategory.getGroupId() == companyGroup.getGroupId()) {
+			assetCategoryElement.addAttribute("global", "true");
+		}
 
 		assetCategoryElement.addAttribute("path", path);
 
@@ -533,7 +545,7 @@ public class PortletExporter {
 				"tags", StringUtil.merge(entry.getValue()));
 		}
 
-		List<AssetTag> assetTags = AssetTagServiceUtil.getGroupTags(
+		List<AssetTag> assetTags = AssetTagLocalServiceUtil.getGroupTags(
 			portletDataContext.getScopeGroupId());
 
 		for (AssetTag assetTag : assetTags) {
@@ -559,6 +571,13 @@ public class PortletExporter {
 
 		Element assetVocabularyElement = assetVocabulariesElement.addElement(
 			"vocabulary");
+
+		Group companyGroup = GroupLocalServiceUtil.getCompanyGroup(
+			assetVocabulary.getCompanyId());
+
+		if (assetVocabulary.getGroupId() == companyGroup.getGroupId()) {
+			assetVocabularyElement.addAttribute("global", "true");
+		}
 
 		assetVocabularyElement.addAttribute("path", path);
 
@@ -649,7 +668,7 @@ public class PortletExporter {
 
 			List<ExpandoColumn> expandoColumns = entry.getValue();
 
-			for (ExpandoColumn expandoColumn: expandoColumns) {
+			for (ExpandoColumn expandoColumn : expandoColumns) {
 				Element expandoColumnElement = expandoTableElement.addElement(
 					"expando-column");
 
@@ -721,8 +740,7 @@ public class PortletExporter {
 			String portletId, Layout layout, Element parentElement,
 			long defaultUserId, boolean exportPermissions,
 			boolean exportPortletArchivedSetups, boolean exportPortletData,
-			boolean exportPortletSetup, boolean exportPortletUserPreferences,
-			boolean exportUserPermissions)
+			boolean exportPortletSetup, boolean exportPortletUserPreferences)
 		throws Exception {
 
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(
@@ -738,9 +756,9 @@ public class PortletExporter {
 			return;
 		}
 
-		if ((!portlet.isInstanceable()) &&
-			(!portlet.isPreferencesUniquePerLayout()) &&
-			(portletDataContext.hasNotUniquePerLayout(portletId))) {
+		if (!portlet.isInstanceable() &&
+			!portlet.isPreferencesUniquePerLayout() &&
+			portletDataContext.hasNotUniquePerLayout(portletId)) {
 
 			return;
 		}
@@ -1126,7 +1144,7 @@ public class PortletExporter {
 		}
 
 		if ((layoutTypePortlet == null) ||
-			(layoutTypePortlet.hasPortletId(portletId))) {
+			layoutTypePortlet.hasPortletId(portletId)) {
 
 			exportPortletPreference(
 				portletDataContext, ownerId, ownerType, defaultUser,

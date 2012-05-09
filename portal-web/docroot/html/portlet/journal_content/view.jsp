@@ -75,15 +75,15 @@ boolean expired = true;
 					AssetEntryServiceUtil.incrementViewCounter(JournalArticle.class.getName(), articleDisplay.getResourcePrimKey());
 				}
 
-				RuntimeLogic portletLogic = new PortletLogic(application, request, response, renderRequest, renderResponse);
+				RuntimeLogic portletLogic = new PortletLogic(request, response);
 				RuntimeLogic actionURLLogic = new ActionURLLogic(renderResponse);
 				RuntimeLogic renderURLLogic = new RenderURLLogic(renderResponse);
 
 				String content = articleDisplay.getContent();
 
-				content = RuntimePortletUtil.processXML(request, content, portletLogic);
-				content = RuntimePortletUtil.processXML(request, content, actionURLLogic);
-				content = RuntimePortletUtil.processXML(request, content, renderURLLogic);
+				content = RuntimePageUtil.processXML(request, content, portletLogic);
+				content = RuntimePageUtil.processXML(request, content, actionURLLogic);
+				content = RuntimePageUtil.processXML(request, content, renderURLLogic);
 
 				if (themeDisplay.isStateExclusive()) {
 					out.print(content);
@@ -167,8 +167,8 @@ boolean expired = true;
 											image='<%= "../file_system/small/" + extension %>'
 											label="<%= true %>"
 											message='<%= LanguageUtil.format(pageContext, "x-convert-x-to-x", new Object[] {"aui-helper-hidden-accessible", articleDisplay.getTitle(), extension.toUpperCase()}) %>'
-											url="<%= exportArticleURL.toString() %>"
 											method="get"
+											url="<%= exportArticleURL.toString() %>"
 										/>
 
 									<%
@@ -191,7 +191,7 @@ boolean expired = true;
 								</c:if>
 
 								<div class="locale-actions">
-									<liferay-ui:language languageIds="<%= availableLocales %>" displayStyle="<%= 0 %>" />
+									<liferay-ui:language displayStyle="<%= 0 %>" languageIds="<%= availableLocales %>" />
 								</div>
 							</c:if>
 						</c:if>
@@ -207,6 +207,7 @@ boolean expired = true;
 						cur="<%= articleDisplay.getCurrentPage() %>"
 						curParam='<%= "page" %>'
 						delta="<%= 1 %>"
+						id="articleDisplayPages"
 						maxPages="<%= 25 %>"
 						total="<%= articleDisplay.getNumberOfPages() %>"
 						type="article"
@@ -245,7 +246,7 @@ boolean expired = true;
 
 								<c:choose>
 									<c:when test="<%= JournalArticlePermission.contains(permissionChecker, article.getGroupId(), article.getArticleId(), ActionKeys.UPDATE) %>">
-										<liferay-portlet:renderURL windowState="<%= WindowState.MAXIMIZED.toString() %>" var="editURL" portletName="<%= PortletKeys.JOURNAL %>">
+										<liferay-portlet:renderURL portletName="<%= PortletKeys.JOURNAL %>" var="editURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
 											<portlet:param name="struts_action" value="/journal/edit_article" />
 											<portlet:param name="redirect" value="<%= currentURL %>" />
 											<portlet:param name="groupId" value="<%= String.valueOf(article.getGroupId()) %>" />
@@ -292,12 +293,7 @@ catch (NoSuchArticleException nsae) {
 JournalTemplate template = null;
 
 if ((articleDisplay != null) && Validator.isNotNull(articleDisplay.getTemplateId())) {
-	try {
-		template = JournalTemplateLocalServiceUtil.getTemplate(articleDisplay.getGroupId(), articleDisplay.getTemplateId());
-	}
-	catch (NoSuchTemplateException nste) {
-		template = JournalTemplateLocalServiceUtil.getTemplate(themeDisplay.getCompanyGroupId(), articleDisplay.getTemplateId());
-	}
+	template = JournalTemplateLocalServiceUtil.getTemplate(articleDisplay.getGroupId(), articleDisplay.getTemplateId(), true);
 }
 
 boolean showEditArticleIcon = (latestArticle != null) && JournalArticlePermission.contains(permissionChecker, latestArticle.getGroupId(), latestArticle.getArticleId(), ActionKeys.UPDATE);
@@ -311,7 +307,7 @@ boolean showIconsActions = themeDisplay.isSignedIn() && (showEditArticleIcon || 
 	<div class="lfr-meta-actions icons-container">
 		<div class="icon-actions">
 			<c:if test="<%= showEditArticleIcon %>">
-				<liferay-portlet:renderURL windowState="<%= WindowState.MAXIMIZED.toString() %>" var="editURL" portletName="<%= PortletKeys.JOURNAL %>">
+				<liferay-portlet:renderURL portletName="<%= PortletKeys.JOURNAL %>" var="editURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
 					<portlet:param name="struts_action" value="/journal/edit_article" />
 					<portlet:param name="redirect" value="<%= currentURL %>" />
 					<portlet:param name="originalRedirect" value="<%= currentURL %>" />
@@ -328,7 +324,7 @@ boolean showIconsActions = themeDisplay.isSignedIn() && (showEditArticleIcon || 
 			</c:if>
 
 			<c:if test="<%= showEditTemplateIcon %>">
-				<liferay-portlet:renderURL windowState="<%= WindowState.MAXIMIZED.toString() %>" var="editTemplateURL" portletName="<%= PortletKeys.JOURNAL %>">
+				<liferay-portlet:renderURL portletName="<%= PortletKeys.JOURNAL %>" var="editTemplateURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
 					<portlet:param name="struts_action" value="/journal/edit_template" />
 					<portlet:param name="redirect" value="<%= currentURL %>" />
 					<portlet:param name="groupId" value="<%= String.valueOf(template.getGroupId()) %>" />
@@ -354,7 +350,7 @@ boolean showIconsActions = themeDisplay.isSignedIn() && (showEditArticleIcon || 
 			</c:if>
 
 			<c:if test="<%= showAddArticleIcon %>">
-				<liferay-portlet:renderURL windowState="<%= WindowState.MAXIMIZED.toString() %>" var="addArticleURL" portletName="<%= PortletKeys.JOURNAL %>">
+				<liferay-portlet:renderURL portletName="<%= PortletKeys.JOURNAL %>" var="addArticleURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
 					<portlet:param name="struts_action" value="/journal/edit_article" />
 					<portlet:param name="redirect" value="<%= currentURL %>" />
 					<portlet:param name="portletResource" value="<%= portletDisplay.getId() %>" />

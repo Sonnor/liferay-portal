@@ -58,27 +58,34 @@ public class OrganizationLocalServiceWrapper implements OrganizationLocalService
 	* Deletes the organization with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param organizationId the primary key of the organization
+	* @return the organization that was removed
 	* @throws PortalException if a organization with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteOrganization(long organizationId)
+	public com.liferay.portal.model.Organization deleteOrganization(
+		long organizationId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_organizationLocalService.deleteOrganization(organizationId);
+		return _organizationLocalService.deleteOrganization(organizationId);
 	}
 
 	/**
 	* Deletes the organization from the database. Also notifies the appropriate model listeners.
 	*
 	* @param organization the organization
+	* @return the organization that was removed
 	* @throws PortalException
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteOrganization(
+	public com.liferay.portal.model.Organization deleteOrganization(
 		com.liferay.portal.model.Organization organization)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_organizationLocalService.deleteOrganization(organization);
+		return _organizationLocalService.deleteOrganization(organization);
+	}
+
+	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return _organizationLocalService.dynamicQuery();
 	}
 
 	/**
@@ -542,6 +549,28 @@ public class OrganizationLocalServiceWrapper implements OrganizationLocalService
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _organizationLocalService.getUserOrganizations(userId);
+	}
+
+	/**
+	* Returns all the organizations associated with the user. If includeNonUser
+	* is <code>true</code>, the result includes those organizations that are
+	* not directly associated to the user but he is an owner or an
+	* administrator of the organization.
+	*
+	* @param userId the primary key of the user
+	* @param includeIndirectlyAssociated whether to includes organizations
+	that are indirectly associated to the user because he is an owner
+	or an administrator of the organization
+	* @return the organizations associated with the user
+	* @throws PortalException if a user with the primary key could not be found
+	* @throws SystemException if a system exception occurred
+	*/
+	public java.util.List<com.liferay.portal.model.Organization> getUserOrganizations(
+		long userId, boolean includeIndirectlyAssociated)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _organizationLocalService.getUserOrganizations(userId,
+			includeIndirectlyAssociated);
 	}
 
 	/**

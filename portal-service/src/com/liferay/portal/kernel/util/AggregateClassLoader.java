@@ -81,7 +81,7 @@ public class AggregateClassLoader extends ClassLoader {
 		}
 
 		if ((classLoader instanceof AggregateClassLoader) &&
-			(classLoader.getParent().equals(getParent()))) {
+			classLoader.getParent().equals(getParent())) {
 
 			AggregateClassLoader aggregateClassLoader =
 				(AggregateClassLoader)classLoader;
@@ -127,7 +127,7 @@ public class AggregateClassLoader extends ClassLoader {
 			(((getParent() == null) &&
 			  (aggregateClassLoader.getParent() == null)) ||
 			 ((getParent() != null) &&
-			  (getParent().equals(aggregateClassLoader.getParent()))))) {
+			  getParent().equals(aggregateClassLoader.getParent())))) {
 
 			return true;
 		}
@@ -178,9 +178,7 @@ public class AggregateClassLoader extends ClassLoader {
 	}
 
 	@Override
-	public Enumeration<URL> getResources(String name)
-		throws IOException {
-
+	public Enumeration<URL> getResources(String name) throws IOException {
 		List<URL> urls = new ArrayList<URL>();
 
 		for (ClassLoader classLoader : getClassLoaders()) {

@@ -24,13 +24,22 @@
 		</c:when>
 	</c:choose>
 
-	<liferay-ui:panel-container id="export-dialog-tree-panel-container" extended="<%= true %>" persistState="<%= true %>">
+	<liferay-ui:panel-container extended="<%= true %>" id="export-dialog-tree-panel-container" persistState="<%= true %>">
 		<liferay-ui:panel collapsible="<%= true %>" cssClass="export-group-panel" id="pagesPanel" persistState="<%= true %>" title="pages">
-			<ul class="lfr-tree lfr-component">
-				<li class="tree-item">
-					<aui:input disabled="<%= true %>" name="pages" type="checkbox" value="<%= true %>" />
-				</li>
+			<c:if test="<%= cmd.equals(Constants.EXPORT) %>">
+				<aui:input name="layoutIds" type="hidden" />
 
+				<liferay-util:include page="/html/portlet/layouts_admin/tree_js.jsp">
+					<liferay-util:param name="tabs1" value='<%= privateLayout ? "private-pages" : "public-pages" %>' />
+					<liferay-util:param name="treeId" value="layoutsExportTree" />
+					<liferay-util:param name="defaultStateChecked" value="1" />
+					<liferay-util:param name="expandFirstNode" value="0" />
+					<liferay-util:param name="saveState" value="0" />
+					<liferay-util:param name="selectableTree" value="1" />
+				</liferay-util:include>
+			</c:if>
+
+			<ul class="lfr-tree lfr-component">
 				<c:if test="<%= cmd.equals(Constants.IMPORT) %>">
 					<li class="tree-item">
 						<aui:input helpMessage="delete-missing-layouts-help" label="delete-missing-layouts" name="<%= PortletDataHandlerKeys.DELETE_MISSING_LAYOUTS %>" type="checkbox" value="<%= false %>" />
@@ -114,9 +123,9 @@
 														monthParam="startDateMonth"
 														monthValue="<%= yesterday.get(Calendar.MONTH) %>"
 														yearParam="startDateYear"
-														yearValue="<%= yesterday.get(Calendar.YEAR) %>"
-														yearRangeStart="<%= yesterday.get(Calendar.YEAR) - 100 %>"
 														yearRangeEnd="<%= yesterday.get(Calendar.YEAR) %>"
+														yearRangeStart="<%= yesterday.get(Calendar.YEAR) - 100 %>"
+														yearValue="<%= yesterday.get(Calendar.YEAR) %>"
 													/>
 
 													&nbsp;
@@ -127,9 +136,9 @@
 														disabled="<%= false %>"
 														hourParam='<%= "startDateHour" %>'
 														hourValue="<%= yesterday.get(Calendar.HOUR) %>"
+														minuteInterval="<%= 1 %>"
 														minuteParam='<%= "startDateMinute" %>'
 														minuteValue="<%= yesterday.get(Calendar.MINUTE) %>"
-														minuteInterval="<%= 1 %>"
 													/>
 												</aui:field-wrapper>
 											</li>
@@ -144,9 +153,9 @@
 														monthParam="endDateMonth"
 														monthValue="<%= today.get(Calendar.MONTH) %>"
 														yearParam="endDateYear"
-														yearValue="<%= today.get(Calendar.YEAR) %>"
-														yearRangeStart="<%= today.get(Calendar.YEAR) - 100 %>"
 														yearRangeEnd="<%= today.get(Calendar.YEAR) %>"
+														yearRangeStart="<%= today.get(Calendar.YEAR) - 100 %>"
+														yearValue="<%= today.get(Calendar.YEAR) %>"
 													/>
 
 													&nbsp;
@@ -157,9 +166,9 @@
 														disabled="<%= false %>"
 														hourParam='<%= "endDateHour" %>'
 														hourValue="<%= today.get(Calendar.HOUR) %>"
+														minuteInterval="<%= 1 %>"
 														minuteParam='<%= "endDateMinute" %>'
 														minuteValue="<%= today.get(Calendar.MINUTE) %>"
-														minuteInterval="<%= 1 %>"
 													/>
 												</aui:field-wrapper>
 											</li>
@@ -355,21 +364,9 @@
 					<aui:input label="permissions" name="<%= PortletDataHandlerKeys.PERMISSIONS %>" type="checkbox" />
 
 					<ul id="<portlet:namespace />permissionsUl">
-						<c:choose>
-							<c:when test="<%= (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 5) || (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) %>">
-								<li class="tree-item">
-									<aui:input label="permissions-assigned-to-roles" name="permissionsAssignedToRoles" type="checkbox" value="<%= true %>" />
-								</li>
-							</c:when>
-							<c:otherwise>
-								<li class="tree-item">
-									<aui:input label="permissions-assigned-to-organizations-user-groups-roles-and-sites" name="permissionsAssignedToOrganizationsUserGroupsRolesAndCommunities" type="checkbox" value="<%= true %>" />
-								</li>
-								<li class="tree-item">
-									<aui:input helpMessage="export-import-permissions-assigned-to-users-help" label="permissions-assigned-to-users" name="permissionsAssignedToUsers" type="checkbox" />
-								</li>
-							</c:otherwise>
-						</c:choose>
+						<li class="tree-item">
+							<aui:input label="permissions-assigned-to-roles" name="permissionsAssignedToRoles" type="checkbox" value="<%= true %>" />
+						</li>
 					</ul>
 				</li>
 

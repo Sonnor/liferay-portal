@@ -57,6 +57,7 @@ import com.liferay.portal.service.persistence.RepositoryEntryUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.documentlibrary.DuplicateFileException;
 import com.liferay.portlet.documentlibrary.DuplicateFolderNameException;
+import com.liferay.portlet.documentlibrary.FileNameException;
 import com.liferay.portlet.documentlibrary.NoSuchFileEntryException;
 import com.liferay.portlet.documentlibrary.NoSuchFileVersionException;
 import com.liferay.portlet.documentlibrary.NoSuchFolderException;
@@ -129,6 +130,15 @@ public class CMISRepository extends BaseCmisRepository {
 			String description, String changeLog, InputStream is, long size,
 			ServiceContext serviceContext)
 		throws PortalException, SystemException {
+
+		if (Validator.isNull(title)) {
+			if (size == 0) {
+				throw new FileNameException();
+			}
+			else {
+				title = sourceFileName;
+			}
+		}
 
 		try {
 			Session session = getSession();
@@ -698,7 +708,7 @@ public class CMISRepository extends BaseCmisRepository {
 	public int getFoldersAndFileEntriesCount(long folderId, String[] mimeTypes)
 		throws PortalException, SystemException {
 
-		if ((mimeTypes != null) && mimeTypes.length > 0) {
+		if ((mimeTypes != null) && (mimeTypes.length > 0)) {
 			List<Folder> folders = getFolders(folderId);
 
 			Session session = getSession();
@@ -1063,11 +1073,15 @@ public class CMISRepository extends BaseCmisRepository {
 		}
 	}
 
-	public Lock refreshFileEntryLock(String lockUuid, long expirationTime) {
+	public Lock refreshFileEntryLock(
+		String lockUuid, long companyId, long expirationTime) {
+
 		throw new UnsupportedOperationException();
 	}
 
-	public Lock refreshFolderLock(String lockUuid, long expirationTime) {
+	public Lock refreshFolderLock(
+		String lockUuid, long companyId, long expirationTime) {
+
 		throw new UnsupportedOperationException();
 	}
 
@@ -1478,11 +1492,7 @@ public class CMISRepository extends BaseCmisRepository {
 			ItemIterable<CmisObject> cmisObjects =
 				cmisParentFolder.getChildren();
 
-			Iterator<CmisObject> itr = cmisObjects.iterator();
-
-			while (itr.hasNext()) {
-				CmisObject cmisObject = itr.next();
-
+			for (CmisObject cmisObject : cmisObjects) {
 				if (cmisObject instanceof
 						org.apache.chemistry.opencmis.client.api.Folder) {
 
@@ -1579,11 +1589,7 @@ public class CMISRepository extends BaseCmisRepository {
 
 		ItemIterable<CmisObject> cmisObjects = cmisFolder.getChildren();
 
-		Iterator<CmisObject> itr = cmisObjects.iterator();
-
-		while (itr.hasNext()) {
-			CmisObject cmisObject = itr.next();
-
+		for (CmisObject cmisObject : cmisObjects) {
 			if (cmisObject instanceof Document) {
 				Document document = (Document)cmisObject;
 
@@ -1654,11 +1660,7 @@ public class CMISRepository extends BaseCmisRepository {
 		List<String> snippets = new ArrayList<String>();
 		List<Float> scores = new ArrayList<Float>();
 
-		Iterator<QueryResult> itr = queryResults.iterator();
-
-		while (itr.hasNext()) {
-			QueryResult queryResult = itr.next();
-
+		for (QueryResult queryResult : queryResults) {
 			total++;
 
 			if (total <= start) {
@@ -1773,15 +1775,11 @@ public class CMISRepository extends BaseCmisRepository {
 			_log.debug("Calling query " + query);
 		}
 
-		ItemIterable<QueryResult> queryResults = session.query(query, false);
-
-		Iterator<QueryResult> itr = queryResults.iterator();
+		ItemIterable<QueryResult> queryResults = session.query(query, true);
 
 		List<String> cmsFolderIds = new ArrayList<String>();
 
-		while (itr.hasNext()) {
-			QueryResult queryResult = itr.next();
-
+		for (QueryResult queryResult : queryResults) {
 			PropertyData<String> propertyData = queryResult.getPropertyById(
 				PropertyIds.OBJECT_ID);
 
@@ -1858,13 +1856,9 @@ public class CMISRepository extends BaseCmisRepository {
 
 		ItemIterable<QueryResult> queryResults = session.query(query, false);
 
-		Iterator<QueryResult> itr = queryResults.iterator();
-
 		List<String> cmisDocumentIds = new ArrayList<String>();
 
-		while (itr.hasNext()) {
-			QueryResult queryResult = itr.next();
-
+		for (QueryResult queryResult : queryResults) {
 			String objectId = queryResult.getPropertyValueByQueryName(
 				PropertyIds.OBJECT_ID);
 

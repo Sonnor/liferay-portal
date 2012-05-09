@@ -399,7 +399,8 @@ public class ServicePreAction extends Action {
 				Group sourceGroup = GroupLocalServiceUtil.getGroup(
 					sourceGroupId);
 
-				if (SitesUtil.isUserGroupLayoutSetViewable(
+				if (layout.isPublicLayout() ||
+					SitesUtil.isUserGroupLayoutSetViewable(
 						permissionChecker, layout.getGroup())) {
 
 					layout = new VirtualLayout(layout, sourceGroup);
@@ -435,22 +436,22 @@ public class ServicePreAction extends Action {
 				request.setAttribute(WebKeys.REQUESTED_LAYOUT, layout);
 			}
 
-			boolean isViewableGroup = LayoutPermissionUtil.contains(
+			boolean viewableGroup = LayoutPermissionUtil.contains(
 				permissionChecker, layout, controlPanelCategory, true,
 				ActionKeys.VIEW);
-			boolean isViewableStaging = GroupPermissionUtil.contains(
+			boolean viewableStaging = GroupPermissionUtil.contains(
 				permissionChecker, group.getGroupId(), ActionKeys.VIEW_STAGING);
 
-			if (isViewableStaging) {
+			if (viewableStaging) {
 				layouts = LayoutLocalServiceUtil.getLayouts(
 					layout.getGroupId(), layout.isPrivateLayout(),
 					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
 			}
-			else if (!isViewableGroup && group.isStagingGroup()) {
+			else if (!viewableGroup && group.isStagingGroup()) {
 				layout = null;
 			}
 			else if (!isLoginRequest(request) &&
-					 (!isViewableGroup ||
+					 (!viewableGroup ||
 					  (!redirectToDefaultLayout &&
 					   !LayoutPermissionUtil.contains(
 						   permissionChecker, layout, false,
@@ -477,7 +478,7 @@ public class ServicePreAction extends Action {
 
 				throw new NoSuchLayoutException(sb.toString());
 			}
-			else if (isLoginRequest(request) && !isViewableGroup) {
+			else if (isLoginRequest(request) && !viewableGroup) {
 				layout = null;
 			}
 			else if (group.isLayoutPrototype()) {
@@ -1171,7 +1172,7 @@ public class ServicePreAction extends Action {
 			themeDisplay.setURLMyAccount(myAccountURL);
 		}
 
-		if ((!user.isActive()) ||
+		if (!user.isActive() ||
 			(PrefsPropsUtil.getBoolean(
 				companyId, PropsKeys.TERMS_OF_USE_REQUIRED) &&
 			 !user.isAgreedToTermsOfUse())) {
@@ -1179,6 +1180,10 @@ public class ServicePreAction extends Action {
 			themeDisplay.setShowAddContentIcon(false);
 			themeDisplay.setShowMyAccountIcon(false);
 			themeDisplay.setShowPageSettingsIcon(false);
+		}
+
+		if (layout.isLayoutPrototypeLinkActive()) {
+			themeDisplay.setShowPageCustomizationIcon(false);
 		}
 
 		if (group.isLayoutPrototype()) {
@@ -1278,9 +1283,6 @@ public class ServicePreAction extends Action {
 		parameterMap.put(
 			PortletDataHandlerKeys.PORTLET_SETUP,
 			new String[] {Boolean.TRUE.toString()});
-		parameterMap.put(
-			PortletDataHandlerKeys.USER_PERMISSIONS,
-			new String[] {Boolean.FALSE.toString()});
 
 		LayoutLocalServiceUtil.importLayouts(
 			userId, groupId, privateLayout, parameterMap, larFile);

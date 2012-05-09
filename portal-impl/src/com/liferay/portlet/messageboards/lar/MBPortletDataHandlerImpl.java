@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.lar.PortletDataHandlerControl;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.StreamUtil;
@@ -354,6 +355,11 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		message.setPriority(message.getPriority());
 
+		MBThread thread = message.getThread();
+
+		messageElement.addAttribute(
+			"question", String.valueOf(thread.isQuestion()));
+
 		if (portletDataContext.getBooleanParameter(_NAMESPACE, "attachments") &&
 			message.isAttachments()) {
 
@@ -401,7 +407,7 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 			long categoryId)
 		throws Exception {
 
-		if ((!portletDataContext.hasDateRange()) ||
+		if (!portletDataContext.hasDateRange() ||
 			(categoryId == MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) ||
 			(categoryId == MBCategoryConstants.DISCUSSION_CATEGORY_ID)) {
 
@@ -609,7 +615,8 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			userBanElement, ban, _NAMESPACE);
 
-		List<User> users = UserUtil.findByUuid(ban.getBanUserUuid());
+		List<User> users = UserUtil.findByUuid_C(
+			ban.getBanUserUuid(), portletDataContext.getCompanyId());
 
 		Iterator<User> itr = users.iterator();
 
@@ -802,6 +809,15 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 					message.getBody(), message.getFormat(), inputStreamOVPs,
 					message.getAnonymous(), message.getPriority(),
 					message.getAllowPingbacks(), serviceContext);
+			}
+
+			importedMessage.setAnswer(message.getAnswer());
+
+			if (importedMessage.isRoot()) {
+				MBThreadLocalServiceUtil.updateQuestion(
+					importedMessage.getThreadId(),
+					GetterUtil.getBoolean(
+						messageElement.attributeValue("question")));
 			}
 
 			threadPKs.put(message.getThreadId(), importedMessage.getThreadId());

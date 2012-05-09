@@ -66,25 +66,32 @@ public class SocialRelationLocalServiceUtil {
 	* Deletes the social relation with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param relationId the primary key of the social relation
+	* @return the social relation that was removed
 	* @throws PortalException if a social relation with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSocialRelation(long relationId)
+	public static com.liferay.portlet.social.model.SocialRelation deleteSocialRelation(
+		long relationId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSocialRelation(relationId);
+		return getService().deleteSocialRelation(relationId);
 	}
 
 	/**
 	* Deletes the social relation from the database. Also notifies the appropriate model listeners.
 	*
 	* @param socialRelation the social relation
+	* @return the social relation that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSocialRelation(
+	public static com.liferay.portlet.social.model.SocialRelation deleteSocialRelation(
 		com.liferay.portlet.social.model.SocialRelation socialRelation)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSocialRelation(socialRelation);
+		return getService().deleteSocialRelation(socialRelation);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -559,14 +566,10 @@ public class SocialRelationLocalServiceUtil {
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(SocialRelationLocalService service) {
-		MethodCache.remove(SocialRelationLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(SocialRelationLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(SocialRelationLocalService.class);
 	}
 
 	private static SocialRelationLocalService _service;

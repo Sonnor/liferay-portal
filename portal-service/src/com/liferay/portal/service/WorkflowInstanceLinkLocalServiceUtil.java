@@ -66,25 +66,34 @@ public class WorkflowInstanceLinkLocalServiceUtil {
 	* Deletes the workflow instance link with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param workflowInstanceLinkId the primary key of the workflow instance link
+	* @return the workflow instance link that was removed
 	* @throws PortalException if a workflow instance link with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteWorkflowInstanceLink(long workflowInstanceLinkId)
+	public static com.liferay.portal.model.WorkflowInstanceLink deleteWorkflowInstanceLink(
+		long workflowInstanceLinkId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteWorkflowInstanceLink(workflowInstanceLinkId);
+		return getService().deleteWorkflowInstanceLink(workflowInstanceLinkId);
 	}
 
 	/**
 	* Deletes the workflow instance link from the database. Also notifies the appropriate model listeners.
 	*
 	* @param workflowInstanceLink the workflow instance link
+	* @return the workflow instance link that was removed
+	* @throws PortalException
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteWorkflowInstanceLink(
+	public static com.liferay.portal.model.WorkflowInstanceLink deleteWorkflowInstanceLink(
 		com.liferay.portal.model.WorkflowInstanceLink workflowInstanceLink)
-		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteWorkflowInstanceLink(workflowInstanceLink);
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().deleteWorkflowInstanceLink(workflowInstanceLink);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -365,14 +374,10 @@ public class WorkflowInstanceLinkLocalServiceUtil {
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(WorkflowInstanceLinkLocalService service) {
-		MethodCache.remove(WorkflowInstanceLinkLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(WorkflowInstanceLinkLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(WorkflowInstanceLinkLocalService.class);
 	}
 
 	private static WorkflowInstanceLinkLocalService _service;

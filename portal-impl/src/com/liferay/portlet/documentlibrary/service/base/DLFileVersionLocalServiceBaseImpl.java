@@ -21,22 +21,18 @@ import com.liferay.portal.kernel.bean.IdentifiableBean;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
-import com.liferay.portal.kernel.search.SearchException;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.model.PersistedModel;
+import com.liferay.portal.service.BaseLocalServiceImpl;
 import com.liferay.portal.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.service.ResourceLocalService;
-import com.liferay.portal.service.ResourceService;
 import com.liferay.portal.service.UserLocalService;
 import com.liferay.portal.service.UserService;
-import com.liferay.portal.service.persistence.ResourceFinder;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserFinder;
 import com.liferay.portal.service.persistence.UserPersistence;
 
@@ -92,7 +88,8 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class DLFileVersionLocalServiceBaseImpl
-	implements DLFileVersionLocalService, IdentifiableBean {
+	extends BaseLocalServiceImpl implements DLFileVersionLocalService,
+		IdentifiableBean {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
@@ -106,26 +103,12 @@ public abstract class DLFileVersionLocalServiceBaseImpl
 	 * @return the document library file version that was added
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public DLFileVersion addDLFileVersion(DLFileVersion dlFileVersion)
 		throws SystemException {
 		dlFileVersion.setNew(true);
 
-		dlFileVersion = dlFileVersionPersistence.update(dlFileVersion, false);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(dlFileVersion);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return dlFileVersion;
+		return dlFileVersionPersistence.update(dlFileVersion, false);
 	}
 
 	/**
@@ -142,49 +125,32 @@ public abstract class DLFileVersionLocalServiceBaseImpl
 	 * Deletes the document library file version with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param fileVersionId the primary key of the document library file version
+	 * @return the document library file version that was removed
 	 * @throws PortalException if a document library file version with the primary key could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteDLFileVersion(long fileVersionId)
+	@Indexable(type = IndexableType.DELETE)
+	public DLFileVersion deleteDLFileVersion(long fileVersionId)
 		throws PortalException, SystemException {
-		DLFileVersion dlFileVersion = dlFileVersionPersistence.remove(fileVersionId);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.delete(dlFileVersion);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+		return dlFileVersionPersistence.remove(fileVersionId);
 	}
 
 	/**
 	 * Deletes the document library file version from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param dlFileVersion the document library file version
+	 * @return the document library file version that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteDLFileVersion(DLFileVersion dlFileVersion)
+	@Indexable(type = IndexableType.DELETE)
+	public DLFileVersion deleteDLFileVersion(DLFileVersion dlFileVersion)
 		throws SystemException {
-		dlFileVersionPersistence.remove(dlFileVersion);
+		return dlFileVersionPersistence.remove(dlFileVersion);
+	}
 
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.delete(dlFileVersion);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+	public DynamicQuery dynamicQuery() {
+		return DynamicQueryFactoryUtil.forClass(DLFileVersion.class,
+			getClassLoader());
 	}
 
 	/**
@@ -324,6 +290,7 @@ public abstract class DLFileVersionLocalServiceBaseImpl
 	 * @return the document library file version that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public DLFileVersion updateDLFileVersion(DLFileVersion dlFileVersion)
 		throws SystemException {
 		return updateDLFileVersion(dlFileVersion, true);
@@ -337,26 +304,12 @@ public abstract class DLFileVersionLocalServiceBaseImpl
 	 * @return the document library file version that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public DLFileVersion updateDLFileVersion(DLFileVersion dlFileVersion,
 		boolean merge) throws SystemException {
 		dlFileVersion.setNew(false);
 
-		dlFileVersion = dlFileVersionPersistence.update(dlFileVersion, merge);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(dlFileVersion);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return dlFileVersion;
+		return dlFileVersionPersistence.update(dlFileVersion, merge);
 	}
 
 	/**
@@ -975,60 +928,6 @@ public abstract class DLFileVersionLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the resource remote service.
-	 *
-	 * @return the resource remote service
-	 */
-	public ResourceService getResourceService() {
-		return resourceService;
-	}
-
-	/**
-	 * Sets the resource remote service.
-	 *
-	 * @param resourceService the resource remote service
-	 */
-	public void setResourceService(ResourceService resourceService) {
-		this.resourceService = resourceService;
-	}
-
-	/**
-	 * Returns the resource persistence.
-	 *
-	 * @return the resource persistence
-	 */
-	public ResourcePersistence getResourcePersistence() {
-		return resourcePersistence;
-	}
-
-	/**
-	 * Sets the resource persistence.
-	 *
-	 * @param resourcePersistence the resource persistence
-	 */
-	public void setResourcePersistence(ResourcePersistence resourcePersistence) {
-		this.resourcePersistence = resourcePersistence;
-	}
-
-	/**
-	 * Returns the resource finder.
-	 *
-	 * @return the resource finder
-	 */
-	public ResourceFinder getResourceFinder() {
-		return resourceFinder;
-	}
-
-	/**
-	 * Sets the resource finder.
-	 *
-	 * @param resourceFinder the resource finder
-	 */
-	public void setResourceFinder(ResourceFinder resourceFinder) {
-		this.resourceFinder = resourceFinder;
-	}
-
-	/**
 	 * Returns the user local service.
 	 *
 	 * @return the user local service
@@ -1128,12 +1027,6 @@ public abstract class DLFileVersionLocalServiceBaseImpl
 		_beanIdentifier = beanIdentifier;
 	}
 
-	protected ClassLoader getClassLoader() {
-		Class<?> clazz = getClass();
-
-		return clazz.getClassLoader();
-	}
-
 	protected Class<?> getModelClass() {
 		return DLFileVersion.class;
 	}
@@ -1227,12 +1120,6 @@ public abstract class DLFileVersionLocalServiceBaseImpl
 	protected CounterLocalService counterLocalService;
 	@BeanReference(type = ResourceLocalService.class)
 	protected ResourceLocalService resourceLocalService;
-	@BeanReference(type = ResourceService.class)
-	protected ResourceService resourceService;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
-	@BeanReference(type = ResourceFinder.class)
-	protected ResourceFinder resourceFinder;
 	@BeanReference(type = UserLocalService.class)
 	protected UserLocalService userLocalService;
 	@BeanReference(type = UserService.class)
@@ -1243,6 +1130,5 @@ public abstract class DLFileVersionLocalServiceBaseImpl
 	protected UserFinder userFinder;
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
 	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
-	private static Log _log = LogFactoryUtil.getLog(DLFileVersionLocalServiceBaseImpl.class);
 	private String _beanIdentifier;
 }

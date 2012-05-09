@@ -66,25 +66,32 @@ public class VirtualHostLocalServiceUtil {
 	* Deletes the virtual host with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param virtualHostId the primary key of the virtual host
+	* @return the virtual host that was removed
 	* @throws PortalException if a virtual host with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteVirtualHost(long virtualHostId)
+	public static com.liferay.portal.model.VirtualHost deleteVirtualHost(
+		long virtualHostId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteVirtualHost(virtualHostId);
+		return getService().deleteVirtualHost(virtualHostId);
 	}
 
 	/**
 	* Deletes the virtual host from the database. Also notifies the appropriate model listeners.
 	*
 	* @param virtualHost the virtual host
+	* @return the virtual host that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteVirtualHost(
+	public static com.liferay.portal.model.VirtualHost deleteVirtualHost(
 		com.liferay.portal.model.VirtualHost virtualHost)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteVirtualHost(virtualHost);
+		return getService().deleteVirtualHost(virtualHost);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -304,14 +311,10 @@ public class VirtualHostLocalServiceUtil {
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(VirtualHostLocalService service) {
-		MethodCache.remove(VirtualHostLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(VirtualHostLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(VirtualHostLocalService.class);
 	}
 
 	private static VirtualHostLocalService _service;

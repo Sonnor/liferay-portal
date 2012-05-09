@@ -516,6 +516,10 @@ public class ThemeDisplay implements Serializable {
 		return _addSessionIdToURL;
 	}
 
+	public boolean isAjax() {
+		return _ajax;
+	}
+
 	public boolean isFacebook() {
 		return _facebook;
 	}
@@ -699,6 +703,10 @@ public class ThemeDisplay implements Serializable {
 		_addSessionIdToURL = addSessionIdToURL;
 	}
 
+	public void setAjax(boolean ajax) {
+		_ajax = ajax;
+	}
+
 	public void setCDNDynamicResourcesHost(String cdnDynamicResourcesHost) {
 		_cdnDynamicResourcesHost = cdnDynamicResourcesHost;
 	}
@@ -853,7 +861,7 @@ public class ThemeDisplay implements Serializable {
 
 			String host = getCDNHost();
 
-			if (Validator.isNull(host) && isFacebook()) {
+			if (Validator.isNull(host)) {
 				host = getPortalURL();
 			}
 
@@ -863,7 +871,7 @@ public class ThemeDisplay implements Serializable {
 
 			String dynamicResourcesHost = getCDNDynamicResourcesHost();
 
-			if (Validator.isNull(dynamicResourcesHost) && isFacebook()) {
+			if (Validator.isNull(dynamicResourcesHost)) {
 				dynamicResourcesHost = getPortalURL();
 			}
 
@@ -1256,6 +1264,7 @@ public class ThemeDisplay implements Serializable {
 
 	private Account _account;
 	private boolean _addSessionIdToURL;
+	private boolean _ajax;
 	private String _cdnDynamicResourcesHost = StringPool.BLANK;
 	private String _cdnHost = StringPool.BLANK;
 	private ColorScheme _colorScheme;

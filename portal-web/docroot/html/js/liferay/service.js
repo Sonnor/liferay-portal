@@ -42,6 +42,8 @@ Liferay.Service.registerClass(
 	{
 		addCountry: true,
 		fetchCountry: true,
+		fetchCountryByA2: true,
+		fetchCountryByA3: true,
 		getCountries: true,
 		getCountry: true,
 		getCountryByA2: true,
@@ -234,19 +236,7 @@ Liferay.Service.registerClass(
 Liferay.Service.registerClass(
 	Liferay.Service.Portal, "Permission",
 	{
-		checkPermission: true,
-		hasGroupPermission: true,
-		hasUserPermission: true,
-		hasUserPermissions: true,
-		setGroupPermissions: true,
-		setIndividualPermissions: true,
-		setOrgGroupPermissions: true,
-		setRolePermission: true,
-		setRolePermissions: true,
-		setUserPermissions: true,
-		unsetRolePermission: true,
-		unsetRolePermissions: true,
-		unsetUserPermissions: true
+		checkPermission: true
 	}
 );
 
@@ -304,6 +294,7 @@ Liferay.Service.registerClass(
 	Liferay.Service.Portal, "Region",
 	{
 		addRegion: true,
+		fetchRegion: true,
 		getRegion: true,
 		getRegions: true
 	}
@@ -322,13 +313,6 @@ Liferay.Service.registerClass(
 		getSupportedParameters: true,
 		getTypeSettingsProperties: true,
 		updateRepository: true
-	}
-);
-
-Liferay.Service.registerClass(
-	Liferay.Service.Portal, "Resource",
-	{
-		getResource: true
 	}
 );
 
@@ -412,7 +396,6 @@ Liferay.Service.registerClass(
 		deletePortrait: true,
 		deleteRoleUser: true,
 		deleteUser: true,
-		getDefaultUserId: true,
 		getGroupUserIds: true,
 		getOrganizationUserIds: true,
 		getRoleUserIds: true,
@@ -622,6 +605,8 @@ Liferay.Service.registerClass(
 		getGroupEntriesCount: true,
 		getGroupsEntries: true,
 		getOrganizationEntries: true,
+		moveEntryToTrash: true,
+		restoreEntryFromTrash: true,
 		subscribe: true,
 		unsubscribe: true
 	}
@@ -687,6 +672,7 @@ Liferay.Service.registerClass(
 		deleteFileEntry: true,
 		deleteFileEntryByTitle: true,
 		deleteFileShortcut: true,
+		deleteFileVersion: true,
 		deleteFolder: true,
 		deleteTempFileEntry: true,
 		getFileEntries: true,
@@ -709,9 +695,11 @@ Liferay.Service.registerClass(
 		lockFileEntry: true,
 		lockFolder: true,
 		moveFileEntry: true,
+		moveFileEntryToTrash: true,
 		moveFolder: true,
 		refreshFileEntryLock: true,
 		refreshFolderLock: true,
+		restoreFileEntryFromTrash: true,
 		revertFileEntry: true,
 		search: true,
 		unlockFileEntry: true,
@@ -732,6 +720,7 @@ Liferay.Service.registerClass(
 		checkOutFileEntry: true,
 		copyFileEntry: true,
 		deleteFileEntry: true,
+		deleteFileVersion: true,
 		fetchFileEntryByImageId: true,
 		getFileEntries: true,
 		getFileEntriesCount: true,
@@ -863,6 +852,7 @@ Liferay.Service.registerClass(
 		addTemplate: true,
 		copyTemplates: true,
 		deleteTemplate: true,
+		fetchTemplate: true,
 		getTemplate: true,
 		getTemplates: true,
 		search: true,
@@ -915,10 +905,13 @@ Liferay.Service.registerClass(
 		expireArticle: true,
 		getArticle: true,
 		getArticleByUrlTitle: true,
+		getArticles: true,
 		getArticlesByArticleId: true,
 		getArticlesByLayoutUuid: true,
+		getArticlesCount: true,
 		getArticlesCountByArticleId: true,
 		getDisplayArticleByUrlTitle: true,
+		getFoldersAndArticlesCount: true,
 		getLatestArticle: true,
 		removeArticleLocale: true,
 		search: true,
@@ -937,6 +930,21 @@ Liferay.Service.registerClass(
 		deleteFeed: true,
 		getFeed: true,
 		updateFeed: true
+	}
+);
+
+Liferay.Service.registerClass(
+	Liferay.Service.Journal, "JournalFolder",
+	{
+		addFolder: true,
+		deleteFolder: true,
+		getFolder: true,
+		getFolders: true,
+		getFoldersAndArticlesCount: true,
+		getFoldersCount: true,
+		getSubfolderIds: true,
+		moveFolder: true,
+		updateFolder: true
 	}
 );
 
@@ -1253,5 +1261,15 @@ Liferay.Service.registerClass(
 		subscribePage: true,
 		unsubscribePage: true,
 		updatePage: true
+	}
+);
+
+Liferay.Service.register("Liferay.Service.Trash", "com.liferay.portlet.trash.service");
+
+Liferay.Service.registerClass(
+	Liferay.Service.Trash, "TrashEntry",
+	{
+		deleteEntries: true,
+		getEntries: true
 	}
 );

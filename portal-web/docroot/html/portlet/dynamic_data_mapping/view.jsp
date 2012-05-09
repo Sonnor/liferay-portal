@@ -70,6 +70,16 @@ portletURL.setParameter("tabs1", tabs1);
 
 			rowHREF = sb.toString();
 		}
+		else {
+			PortletURL rowURL = renderResponse.createRenderURL();
+
+			rowURL.setParameter("struts_action", "/dynamic_data_mapping/edit_structure");
+			rowURL.setParameter("redirect", currentURL);
+			rowURL.setParameter("classNameId", String.valueOf(PortalUtil.getClassNameId(DDMStructure.class)));
+			rowURL.setParameter("classPK", String.valueOf(structure.getStructureId()));
+
+			rowHREF = rowURL.toString();
+		}
 		%>
 
 		<liferay-ui:search-container-column-text
@@ -92,10 +102,10 @@ portletURL.setParameter("tabs1", tabs1);
 			/>
 		</c:if>
 
-		<c:if test="<%= classNameId == 0 %>">
+		<c:if test="<%= scopeClassNameId == 0 %>">
 			<liferay-ui:search-container-column-text
-				href="<%= rowHREF %>"
 				buffer="buffer"
+				href="<%= rowHREF %>"
 				name="type"
 			>
 
@@ -107,8 +117,8 @@ portletURL.setParameter("tabs1", tabs1);
 		</c:if>
 
 		<liferay-ui:search-container-column-text
-			href="<%= rowHREF %>"
 			buffer="buffer"
+			href="<%= rowHREF %>"
 			name="modified-date"
 		>
 
@@ -132,12 +142,13 @@ portletURL.setParameter("tabs1", tabs1);
 		Liferay.Util.openWindow(
 			{
 				dialog: {
-					centered: true,
+					align: Liferay.Util.Window.ALIGN_CENTER,
 					constrain: true,
 					width: 600
 				},
+				id: '<portlet:namespace />copyStructure',
 				refreshWindow: window,
-				title: '<%= UnicodeLanguageUtil.get(pageContext, "copy-structure") %>',
+				title: '<%= UnicodeLanguageUtil.get(pageContext, "copy-data-definition") %>',
 				uri: uri
 			}
 		);

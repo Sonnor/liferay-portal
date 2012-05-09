@@ -41,6 +41,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -53,7 +54,6 @@ import com.liferay.portal.lar.PortletImporter;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutConstants;
-import com.liferay.portal.model.LayoutPrototype;
 import com.liferay.portal.model.LayoutReference;
 import com.liferay.portal.model.LayoutSet;
 import com.liferay.portal.model.LayoutSetPrototype;
@@ -61,7 +61,6 @@ import com.liferay.portal.model.LayoutTypePortlet;
 import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.PortletPreferences;
-import com.liferay.portal.model.Resource;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.ResourcePermission;
 import com.liferay.portal.model.User;
@@ -104,6 +103,7 @@ import javax.portlet.PortletException;
  * @author Raymond Augé
  * @author Jorge Ferrer
  * @author Bruno Farache
+ * @author Vilmos Papp
  */
 public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
@@ -198,7 +198,8 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		String name = nameMap.get(LocaleUtil.getDefault());
 		friendlyURL = getFriendlyURL(
 			groupId, privateLayout, layoutId, name, friendlyURL);
-		int priority = getNextPriority(groupId, privateLayout, parentLayoutId);
+		int priority = getNextPriority(
+			groupId, privateLayout, parentLayoutId, null, -1);
 
 		validate(
 			groupId, privateLayout, layoutId, parentLayoutId, name, type,
@@ -249,15 +250,6 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		if (Validator.isNotNull(layoutPrototypeUuid)) {
 			layout.setLayoutPrototypeUuid(layoutPrototypeUuid);
 			layout.setLayoutPrototypeLinkEnabled(layoutPrototypeLinkEnabled);
-
-			LayoutPrototype layoutPrototype =
-				layoutPrototypeLocalService.getLayoutPrototypeByUuid(
-					layoutPrototypeUuid);
-
-			Layout layoutPrototypeLayout = layoutPrototype.getLayout();
-
-			layout.setSourcePrototypeLayoutUuid(
-				layoutPrototypeLayout.getUuid());
 		}
 
 		if (type.equals(LayoutConstants.TYPE_PORTLET)) {
@@ -302,7 +294,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		layoutSetLocalService.updatePageCount(groupId, privateLayout);
 
-		LayoutSet layoutSet = layoutSetLocalService.getLayoutSet(
+		LayoutSet layoutSet = layoutSetPersistence.findByG_P(
 			groupId, privateLayout);
 
 		layout.setLayoutSet(layoutSet);
@@ -450,6 +442,11 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			PortletKeys.PREFS_OWNER_ID_DEFAULT,
 			PortletKeys.PREFS_OWNER_TYPE_LAYOUT, layout.getPlid());
 
+		// Subscriptions
+
+		subscriptionLocalService.deleteSubscriptions(
+			layout.getCompanyId(), Layout.class.getName(), layout.getPlid());
+
 		// Ratings
 
 		ratingsStatsLocalService.deleteStats(
@@ -493,23 +490,13 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		String primKey =
 			layout.getPlid() + PortletConstants.LAYOUT_SEPARATOR + "%";
 
-		if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) {
-			List<ResourcePermission> resourcePermissions =
-				resourcePermissionPersistence.findByC_P(
-					layout.getCompanyId(), primKey);
-
-			for (ResourcePermission resourcePermission : resourcePermissions) {
-				resourcePermissionLocalService.deleteResourcePermission(
-					resourcePermission);
-			}
-		}
-		else {
-			List<Resource> resources = resourceFinder.findByC_P(
+		List<ResourcePermission> resourcePermissions =
+			resourcePermissionPersistence.findByC_P(
 				layout.getCompanyId(), primKey);
 
-			for (Resource resource : resources) {
-				resourceLocalService.deleteResource(resource);
-			}
+		for (ResourcePermission resourcePermission : resourcePermissions) {
+			resourcePermissionLocalService.deleteResourcePermission(
+				resourcePermission);
 		}
 
 		resourceLocalService.deleteResource(
@@ -930,8 +917,8 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			groupId, privateLayout, friendlyURL);
 
 		if ((layout == null) &&
-			(friendlyURL.startsWith(StringPool.SLASH)) &&
-			(Validator.isNumber(friendlyURL.substring(1)))) {
+			friendlyURL.startsWith(StringPool.SLASH) &&
+			Validator.isNumber(friendlyURL.substring(1))) {
 
 			long layoutId = GetterUtil.getLong(friendlyURL.substring(1));
 
@@ -944,23 +931,6 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		}
 
 		return layout;
-	}
-
-	/**
-	 * Returns the layout matching the primary key; throws a {@link
-	 * com.liferay.portal.NoSuchLayoutException} otherwise.
-	 *
-	 * @param  plid the primary key of the layout
-	 * @return the matching layout
-	 * @throws PortalException if a layout with the primary key could not be
-	 *         found
-	 * @throws SystemException if a system exception occurred
-	 */
-	@Override
-	public Layout getLayout(long plid)
-		throws PortalException, SystemException {
-
-		return layoutPersistence.findByPrimaryKey(plid);
 	}
 
 	/**
@@ -994,23 +964,6 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		throws PortalException, SystemException {
 
 		return layoutPersistence.findByIconImageId(iconImageId);
-	}
-
-	/**
-	 * Returns the layout with the universally unique identifier and the group.
-	 *
-	 * @param  uuid the universally unique identifier of the layout
-	 * @param  groupId the primary key of the group
-	 * @return the layout with the universally unique identifier and the group
-	 * @throws PortalException if a group with the primary key could not be
-	 *         found
-	 * @throws SystemException if a system exception occurred
-	 */
-	@Override
-	public Layout getLayoutByUuidAndGroupId(String uuid, long groupId)
-		throws PortalException, SystemException {
-
-		return layoutPersistence.findByUUID_G(uuid, groupId);
 	}
 
 	/**
@@ -1147,6 +1100,13 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		return layoutReferences.toArray(
 			new LayoutReference[layoutReferences.size()]);
+	}
+
+	public int getLayoutsByLayoutPrototypeUuidCount(String layoutPrototypeUuid)
+		throws SystemException {
+
+		return layoutPersistence.countByLayoutPrototypeUuid(
+			layoutPrototypeUuid);
 	}
 
 	public int getLayoutsCount(Group group, boolean privateLayout)
@@ -1315,23 +1275,13 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	}
 
 	public boolean hasLayoutSetPrototypeLayout(
-			long layoutSetPrototypeId, String layoutUuid)
+			String layoutSetPrototypeUuid, String layoutUuid, long companyId)
 		throws PortalException, SystemException {
 
 		LayoutSetPrototype layoutSetPrototype =
-			layoutSetPrototypeLocalService.getLayoutSetPrototype(
-				layoutSetPrototypeId);
-
-		return hasLayoutSetPrototypeLayout(layoutSetPrototype, layoutUuid);
-	}
-
-	public boolean hasLayoutSetPrototypeLayout(
-			String layoutSetPrototypeUuid, String layoutUuid)
-		throws PortalException, SystemException {
-
-		LayoutSetPrototype layoutSetPrototype =
-			layoutSetPrototypeLocalService.getLayoutSetPrototypeByUuid(
-				layoutSetPrototypeUuid);
+			layoutSetPrototypeLocalService.
+				getLayoutSetPrototypeByUuidAndCompanyId(
+					layoutSetPrototypeUuid, companyId);
 
 		return hasLayoutSetPrototypeLayout(layoutSetPrototype, layoutUuid);
 	}
@@ -1428,8 +1378,8 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 			importLayouts(userId, groupId, privateLayout, parameterMap, file);
 		}
-		catch (IOException e) {
-			throw new SystemException(e);
+		catch (IOException ioe) {
+			throw new SystemException(ioe);
 		}
 	}
 
@@ -1502,8 +1452,8 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			importPortletInfo(
 				userId, plid, groupId, portletId, parameterMap, file);
 		}
-		catch (IOException e) {
-			throw new SystemException(e);
+		catch (IOException ioe) {
+			throw new SystemException(ioe);
 		}
 	}
 
@@ -1699,8 +1649,11 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			layout.getNameMap(), nameMap);
 
 		if (parentLayoutId != layout.getParentLayoutId()) {
-			layout.setPriority(
-				getNextPriority(groupId, privateLayout, parentLayoutId));
+			int priority = getNextPriority(
+				groupId, privateLayout, parentLayoutId,
+				layout.getSourcePrototypeLayoutUuid(), -1);
+
+			layout.setPriority(priority);
 		}
 
 		layout.setModifiedDate(serviceContext.getModifiedDate(now));
@@ -1747,15 +1700,6 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		if (Validator.isNotNull(layoutPrototypeUuid)) {
 			layout.setLayoutPrototypeUuid(layoutPrototypeUuid);
 			layout.setLayoutPrototypeLinkEnabled(layoutPrototypeLinkEnabled);
-
-			LayoutPrototype layoutPrototype =
-				layoutPrototypeLocalService.getLayoutPrototypeByUuid(
-					layoutPrototypeUuid);
-
-			Layout layoutPrototypeLayout = layoutPrototype.getLayout();
-
-			layout.setSourcePrototypeLayoutUuid(
-				layoutPrototypeLayout.getUuid());
 		}
 
 		layoutPersistence.update(layout, false);
@@ -1967,8 +1911,11 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			groupId, privateLayout, layoutId);
 
 		if (parentLayoutId != layout.getParentLayoutId()) {
-			layout.setPriority(
-				getNextPriority(groupId, privateLayout, parentLayoutId));
+			int priority = getNextPriority(
+				groupId, privateLayout, parentLayoutId,
+				layout.getSourcePrototypeLayoutUuid(), -1);
+
+			layout.setPriority(priority);
 		}
 
 		layout.setModifiedDate(now);
@@ -2020,7 +1967,8 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		if (parentLayoutId != layout.getParentLayoutId()) {
 			int priority = getNextPriority(
-				layout.getGroupId(), layout.isPrivateLayout(), parentLayoutId);
+				layout.getGroupId(), layout.isPrivateLayout(), parentLayoutId,
+				layout.getSourcePrototypeLayoutUuid(), -1);
 
 			layout.setPriority(priority);
 		}
@@ -2031,6 +1979,32 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		layoutPersistence.update(layout, false);
 
 		return layout;
+	}
+
+	/**
+	 * Updates the priorities of the layouts.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @param  privateLayout whether the layout is private to the group
+	 * @throws PortalException if a matching layout could not be found
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void updatePriorities(long groupId, boolean privateLayout)
+		throws PortalException, SystemException {
+
+		List<Layout> layouts = layoutPersistence.findByG_P(
+			groupId, privateLayout);
+
+		for (Layout layout : layouts) {
+			int nextPriority = getNextPriority(
+				layout.getGroupId(), layout.isPrivateLayout(),
+				layout.getParentLayoutId(),
+				layout.getSourcePrototypeLayoutUuid(), layout.getPriority());
+
+			layout.setPriority(nextPriority);
+
+			layoutPersistence.update(layout, false);
+		}
 	}
 
 	/**
@@ -2050,29 +2024,43 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		Date now = new Date();
 
-		boolean lessThan = false;
-
-		if (layout.getPriority() < priority) {
-			lessThan = true;
-		}
-
 		layout.setModifiedDate(now);
-		layout.setPriority(priority);
+
+		int oldPriority = layout.getPriority();
+
+		int nextPriority = getNextPriority(
+			layout.getGroupId(), layout.isPrivateLayout(),
+			layout.getParentLayoutId(), layout.getSourcePrototypeLayoutUuid(),
+			priority);
+
+		layout.setPriority(nextPriority);
 
 		layoutPersistence.update(layout, false);
-
-		priority = 0;
 
 		List<Layout> layouts = layoutPersistence.findByG_P_P(
 			layout.getGroupId(), layout.isPrivateLayout(),
 			layout.getParentLayoutId());
 
+		boolean lessThan = false;
+
+		if (oldPriority < priority) {
+			lessThan = true;
+		}
+
 		layouts = ListUtil.sort(
 			layouts, new LayoutPriorityComparator(layout, lessThan));
 
+		priority = 0;
+
 		for (Layout curLayout : layouts) {
 			curLayout.setModifiedDate(now);
-			curLayout.setPriority(priority++);
+
+			int curNextPriority = getNextPriority(
+				layout.getGroupId(), layout.isPrivateLayout(),
+				layout.getParentLayoutId(),
+				curLayout.getSourcePrototypeLayoutUuid(), priority++);
+
+			curLayout.setPriority(curNextPriority);
 
 			layoutPersistence.update(curLayout, false);
 
@@ -2134,12 +2122,14 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		DynamicQuery portletPreferencesDynamicQuery =
 			DynamicQueryFactoryUtil.forClass(
-				PortletPreferences.class, PortletPreferencesImpl.TABLE_NAME);
+				PortletPreferences.class, PortletPreferencesImpl.TABLE_NAME,
+				PortalClassLoaderUtil.getClassLoader());
 
 		Property plidProperty = PropertyFactoryUtil.forName("plid");
 
 		DynamicQuery layoutDynamicQuery = DynamicQueryFactoryUtil.forClass(
-			Layout.class, LayoutImpl.TABLE_NAME);
+			Layout.class, LayoutImpl.TABLE_NAME,
+			PortalClassLoaderUtil.getClassLoader());
 
 		Projection plidProjection = ProjectionFactoryUtil.property("plid");
 
@@ -2171,7 +2161,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 				junction.add(criterion);
 			}
-			else{
+			else {
 				Criterion criterion = RestrictionsFactoryUtil.eq(
 					"portletId", scopablePortlet.getPortletId());
 
@@ -2186,7 +2176,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 				portletPreferencesDynamicQuery);
 
 		for (PortletPreferences portletPreferences : portletPreferencesList) {
-			if ((portletPreferences.getPortletId() == null)) {
+			if (portletPreferences.getPortletId() == null) {
 				continue;
 			}
 
@@ -2312,19 +2302,39 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	}
 
 	protected int getNextPriority(
-			long groupId, boolean privateLayout, long parentLayoutId)
+			long groupId, boolean privateLayout, long parentLayoutId,
+			String sourcePrototypeLayoutUuid, int defaultPriority)
 		throws SystemException {
 
-		List<Layout> layouts = layoutPersistence.findByG_P_P(
-			groupId, privateLayout, parentLayoutId);
+		try {
+			int priority = defaultPriority;
 
-		if (layouts.size() == 0) {
+			if (priority < 0) {
+				Layout layout = layoutPersistence.findByG_P_P_First(
+					groupId, privateLayout, parentLayoutId,
+					new LayoutPriorityComparator(false));
+
+				priority = layout.getPriority() + 1;
+			}
+
+			if ((priority < _PRIORITY_BUFFER) &&
+				Validator.isNull(sourcePrototypeLayoutUuid)) {
+
+				LayoutSet layoutSet = layoutSetPersistence.fetchByG_P(
+					groupId, privateLayout);
+
+				if (Validator.isNotNull(
+						layoutSet.getLayoutSetPrototypeUuid())) {
+
+					priority = priority + _PRIORITY_BUFFER;
+				}
+			}
+
+			return priority;
+		}
+		catch (NoSuchLayoutException nsle) {
 			return 0;
 		}
-
-		Layout layout = layouts.get(layouts.size() - 1);
-
-		return layout.getPriority() + 1;
 	}
 
 	protected long getParentLayoutId(
@@ -2404,9 +2414,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		validateFriendlyURL(groupId, privateLayout, layoutId, friendlyURL);
 	}
 
-	protected void validateFirstLayout(String type)
-		throws PortalException {
-
+	protected void validateFirstLayout(String type) throws PortalException {
 		if (Validator.isNull(type) || !PortalUtil.isLayoutFirstPageable(type)) {
 			LayoutTypeException lte = new LayoutTypeException(
 				LayoutTypeException.FIRST_LAYOUT);
@@ -2553,5 +2561,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			}
 		}
 	}
+
+	private static final int _PRIORITY_BUFFER = 1000000;
 
 }

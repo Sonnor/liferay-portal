@@ -66,25 +66,32 @@ public class SCProductScreenshotLocalServiceUtil {
 	* Deletes the s c product screenshot with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param productScreenshotId the primary key of the s c product screenshot
+	* @return the s c product screenshot that was removed
 	* @throws PortalException if a s c product screenshot with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSCProductScreenshot(long productScreenshotId)
+	public static com.liferay.portlet.softwarecatalog.model.SCProductScreenshot deleteSCProductScreenshot(
+		long productScreenshotId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSCProductScreenshot(productScreenshotId);
+		return getService().deleteSCProductScreenshot(productScreenshotId);
 	}
 
 	/**
 	* Deletes the s c product screenshot from the database. Also notifies the appropriate model listeners.
 	*
 	* @param scProductScreenshot the s c product screenshot
+	* @return the s c product screenshot that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSCProductScreenshot(
+	public static com.liferay.portlet.softwarecatalog.model.SCProductScreenshot deleteSCProductScreenshot(
 		com.liferay.portlet.softwarecatalog.model.SCProductScreenshot scProductScreenshot)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSCProductScreenshot(scProductScreenshot);
+		return getService().deleteSCProductScreenshot(scProductScreenshot);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -313,14 +320,10 @@ public class SCProductScreenshotLocalServiceUtil {
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(SCProductScreenshotLocalService service) {
-		MethodCache.remove(SCProductScreenshotLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(SCProductScreenshotLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(SCProductScreenshotLocalService.class);
 	}
 
 	private static SCProductScreenshotLocalService _service;

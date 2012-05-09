@@ -46,9 +46,11 @@ String emailBody = PrefsParamUtil.getString(preferences, request, emailParam + "
 
 String editorParam = emailParam + "Body_" + currentLanguageId;
 String editorContent = emailBody;
+
+String[] socialBookmarksTypesArray = StringUtil.split(preferences.getValue("socialBookmarksTypes", PropsUtil.get(PropsKeys.SOCIAL_BOOKMARK_TYPES)));
 %>
 
-<liferay-portlet:renderURL var="portletURL" portletConfiguration="true">
+<liferay-portlet:renderURL portletConfiguration="true" var="portletURL">
 	<portlet:param name="tabs2" value="<%= tabs2 %>" />
 	<portlet:param name="redirect" value="<%= redirect %>" />
 </liferay-portlet:renderURL>
@@ -87,6 +89,12 @@ String editorContent = emailBody;
 				<h4><liferay-ui:message key="definition-of-terms" /></h4>
 
 				<dl>
+					<dt>
+						[$BLOGS_ENTRY_STATUS_BY_USER_NAME$]
+					</dt>
+					<dd>
+						<liferay-ui:message key="the-user-who-updated-the-blog-entry" />
+					</dd>
 					<dt>
 						[$BLOGS_ENTRY_USER_ADDRESS$]
 					</dt>
@@ -319,6 +327,22 @@ String editorContent = emailBody;
 							<aui:option label="top" selected='<%= socialBookmarksDisplayPosition.equals("top") %>' />
 							<aui:option label="bottom" selected='<%= socialBookmarksDisplayPosition.equals("bottom") %>' />
 						</aui:select>
+
+						<aui:field-wrapper label="social-bookmarks">
+
+							<%
+							for (String type : PropsUtil.getArray(PropsKeys.SOCIAL_BOOKMARK_TYPES)) {
+							%>
+
+								<aui:field-wrapper inlineLabel="right" label="<%= type %>">
+									<input <%= ArrayUtil.contains(socialBookmarksTypesArray, type) ? "checked": "" %> name="preferences--socialBookmarksTypes--" type="checkbox" value="<%= type %>" />
+								</aui:field-wrapper>
+
+							<%
+							}
+							%>
+
+						</aui:field-wrapper>
 					</div>
 				</aui:fieldset>
 			</aui:fieldset>

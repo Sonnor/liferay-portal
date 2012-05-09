@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.plugin.PluginPackage;
+import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.servlet.PortalSessionThreadLocal;
 import com.liferay.portal.kernel.servlet.PortletSessionTracker;
 import com.liferay.portal.kernel.servlet.ProtectedServletRequest;
@@ -40,8 +41,9 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalLifecycleUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -69,7 +71,6 @@ import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.LayoutTemplateLocalServiceUtil;
 import com.liferay.portal.service.PortletLocalServiceUtil;
 import com.liferay.portal.service.ResourceActionLocalServiceUtil;
-import com.liferay.portal.service.ResourceCodeLocalServiceUtil;
 import com.liferay.portal.service.ThemeLocalServiceUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.servlet.filters.absoluteredirects.AbsoluteRedirectsResponse;
@@ -93,12 +94,12 @@ import com.liferay.portlet.PortletInstanceFactoryUtil;
 import com.liferay.portlet.PortletURLListenerFactory;
 import com.liferay.portlet.social.util.SocialConfigurationUtil;
 import com.liferay.util.ContentUtil;
-import com.liferay.util.servlet.DynamicServletRequest;
 import com.liferay.util.servlet.EncryptedServletRequest;
 
 import java.io.IOException;
 
-import java.util.Iterator;
+import java.lang.reflect.Field;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -218,6 +219,17 @@ public class MainServlet extends ActionServlet {
 		}
 
 		if (_log.isDebugEnabled()) {
+			_log.debug("Initialize server detector");
+		}
+
+		try {
+			initServerDetector();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
+
+		if (_log.isDebugEnabled()) {
 			_log.debug("Initialize plugin package");
 		}
 
@@ -315,17 +327,6 @@ public class MainServlet extends ActionServlet {
 
 		try {
 			initResourceActions(portlets);
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("Initialize resource codes");
-		}
-
-		try {
-			initResourceCodes(portlets);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -621,8 +622,8 @@ public class MainServlet extends ActionServlet {
 	protected void destroyCompanies() throws Exception {
 		long[] companyIds = PortalInstances.getCompanyIds();
 
-		for (int i = 0; i < companyIds.length; i++) {
-			destroyCompany(companyIds[i]);
+		for (long companyId : companyIds) {
+			destroyCompany(companyId);
 		}
 	}
 
@@ -643,11 +644,7 @@ public class MainServlet extends ActionServlet {
 	}
 
 	protected void destroyPortlets(List<Portlet> portlets) throws Exception {
-		Iterator<Portlet> itr = portlets.iterator();
-
-		while (itr.hasNext()) {
-			Portlet portlet = itr.next();
-
+		for (Portlet portlet : portlets) {
 			PortletInstanceFactoryUtil.destroy(portlet);
 		}
 	}
@@ -768,8 +765,8 @@ public class MainServlet extends ActionServlet {
 		try {
 			String[] webIds = PortalInstances.getWebIds();
 
-			for (int i = 0; i < webIds.length; i++) {
-				PortalInstances.initCompany(servletContext, webIds[i]);
+			for (String webId : webIds) {
+				PortalInstances.initCompany(servletContext, webId);
 			}
 		}
 		finally {
@@ -904,30 +901,7 @@ public class MainServlet extends ActionServlet {
 	protected void initResourceActions(List<Portlet> portlets)
 		throws Exception {
 
-		if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM < 6) {
-			if (_log.isWarnEnabled()) {
-				StringBundler sb = new StringBundler(8);
-
-				sb.append("Liferay is configured to use permission algorithm ");
-				sb.append(PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM);
-				sb.append(". Versions after 6.1 will only support algorithm ");
-				sb.append("6 and above. Please sign in as an administrator, ");
-				sb.append("go to the Control Panel, select \"Server ");
-				sb.append("Administration\", select the \"Data Migration\" ");
-				sb.append("tab, and convert from this legacy permission ");
-				sb.append("algorithm as soon as possible.");
-
-				_log.warn(sb.toString());
-			}
-
-			return;
-		}
-
-		Iterator<Portlet> itr = portlets.iterator();
-
-		while (itr.hasNext()) {
-			Portlet portlet = itr.next();
-
+		for (Portlet portlet : portlets) {
 			List<String> portletActions =
 				ResourceActionsUtil.getPortletResourceActions(portlet);
 
@@ -948,28 +922,166 @@ public class MainServlet extends ActionServlet {
 		}
 	}
 
-	protected void initResourceCodes(List<Portlet> portlets) throws Exception {
-		long[] companyIds = PortalInstances.getCompanyIdsBySQL();
+	protected void initServerDetector() throws Exception {
+		if (ServerDetector.isJetty()) {
+			initServerDetectorJetty();
+		}
+		else if (ServerDetector.isTomcat()) {
+			initServerDetectorTomcat();
+		}
+	}
 
-		Iterator<Portlet> itr = portlets.iterator();
+	protected void initServerDetectorJetty() throws Exception {
 
-		while (itr.hasNext()) {
-			Portlet portlet = itr.next();
+		// org.eclipse.jetty.webapp.WebAppContext
 
-			List<String> modelNames =
-				ResourceActionsUtil.getPortletModelResources(
-					portlet.getPortletId());
+		ServletContext servletContext = getServletContext();
 
-			for (long companyId : companyIds) {
-				ResourceCodeLocalServiceUtil.checkResourceCodes(
-					companyId, portlet.getPortletId());
+		Class<?> servletContextClass = servletContext.getClass();
 
-				for (String modelName : modelNames) {
-					ResourceCodeLocalServiceUtil.checkResourceCodes(
-						companyId, modelName);
-				}
+		Field outerClassField = servletContextClass.getDeclaredField("this$0");
+
+		outerClassField.setAccessible(true);
+
+		Object webAppContext = outerClassField.get(servletContext);
+
+		// org.eclipse.jetty.server.handler.AbstractHandler
+
+		Class<?> abstractHandlerClass = webAppContext.getClass();
+
+		for (int i = 0; i < 6; i++) {
+			abstractHandlerClass = abstractHandlerClass.getSuperclass();
+		}
+
+		// org.eclipse.jetty.server.Server
+
+		Field serverField = abstractHandlerClass.getDeclaredField("_server");
+
+		serverField.setAccessible(true);
+
+		Object server = serverField.get(webAppContext);
+
+		// org.eclipse.jetty.util.component.AggregateLifeCycle
+
+		Class<?> aggregateLifeCycleClass = server.getClass();
+
+		for (int i = 0; i < 4; i++) {
+			aggregateLifeCycleClass = aggregateLifeCycleClass.getSuperclass();
+		}
+
+		// org.eclipse.jetty.deploy.DeploymentManager
+
+		Field dependentBeansField = aggregateLifeCycleClass.getDeclaredField(
+			"_dependentBeans");
+
+		dependentBeansField.setAccessible(true);
+
+		List<?> dependentBeans = (List<?>)dependentBeansField.get(server);
+
+		Object deploymentManager = null;
+
+		for (Object dependentBean : dependentBeans) {
+			Class<?> dependentBeanClass = dependentBean.getClass();
+
+			String dependentBeanClassName = dependentBeanClass.getName();
+
+			if (dependentBeanClassName.equals(
+					"org.eclipse.jetty.deploy.DeploymentManager")) {
+
+				deploymentManager = dependentBean;
+
+				break;
 			}
 		}
+
+		if (deploymentManager == null) {
+			throw new Exception("DeploymentManager not found");
+		}
+
+		// org.eclipse.jetty.deploy.providers.ScanningAppProvider
+
+		Class<?> deploymentManagerClass = deploymentManager.getClass();
+
+		Field providersField = deploymentManagerClass.getDeclaredField(
+			"_providers");
+
+		providersField.setAccessible(true);
+
+		List<?> providers = (List<?>)providersField.get(deploymentManager);
+
+		boolean hotDeploySupported = false;
+
+		for (Object provider : providers) {
+			Class<?> providerClass = provider.getClass();
+
+			String providerClassName = providerClass.getName();
+
+			if (!providerClassName.equals(
+					"org.eclipse.jetty.deploy.providers.ContextProvider")) {
+
+				continue;
+			}
+
+			Class<?> scanningAppProviderClass = providerClass.getSuperclass();
+
+			Field scanIntervalField = scanningAppProviderClass.getDeclaredField(
+				"_scanInterval");
+
+			scanIntervalField.setAccessible(true);
+
+			Integer scanInterval = (Integer)scanIntervalField.get(provider);
+
+			if ((scanInterval != null) && (scanInterval.intValue() > 0)) {
+				hotDeploySupported = true;
+
+				break;
+			}
+		}
+
+		ServerDetector.setSupportsHotDeploy(hotDeploySupported);
+	}
+
+	protected void initServerDetectorTomcat() throws Exception {
+
+		// org.apache.catalina.core.ApplicationContextFacade
+
+		ServletContext servletContext = getServletContext();
+
+		Class<?> applicationContextFacadeClass = servletContext.getClass();
+
+		Field contextField1 = ReflectionUtil.getDeclaredField(
+			applicationContextFacadeClass, "context");
+
+		Object contextValue1 = contextField1.get(servletContext);
+
+		// org.apache.catalina.core.ApplicationContext
+
+		Class<?> applicationContextClass = contextField1.getType();
+
+		Field contextField2 = ReflectionUtil.getDeclaredField(
+			applicationContextClass, "context");
+
+		Object contextValue2 = contextField2.get(contextValue1);
+
+		// org.apache.catalina.core.StandardContext
+
+		Class<?> standardContextClass = contextField2.getType();
+
+		// org.apache.catalina.core.ContainerBase
+
+		Class<?> containerBaseClass = standardContextClass.getSuperclass();
+
+		Field parentField = ReflectionUtil.getDeclaredField(
+			containerBaseClass, "parent");
+
+		Object parentValue = parentField.get(contextValue2);
+
+		Field autoDeployField = ReflectionUtil.getDeclaredField(
+			parentValue.getClass(), "autoDeploy");
+
+		Boolean autoDeployValue = (Boolean)autoDeployField.get(parentValue);
+
+		ServerDetector.setSupportsHotDeploy(autoDeployValue);
 	}
 
 	protected void initServletContextPool() throws Exception {

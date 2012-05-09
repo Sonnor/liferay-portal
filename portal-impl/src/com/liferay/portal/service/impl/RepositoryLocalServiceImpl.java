@@ -131,7 +131,7 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 	}
 
 	@Override
-	public void deleteRepository(long repositoryId)
+	public Repository deleteRepository(long repositoryId)
 		throws PortalException, SystemException {
 
 		Repository repository = repositoryPersistence.fetchByPrimaryKey(
@@ -151,6 +151,8 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 
 			repositoryEntryPersistence.removeByRepositoryId(repositoryId);
 		}
+
+		return repository;
 	}
 
 	public LocalRepository getLocalRepositoryImpl(long repositoryId)
@@ -194,6 +196,14 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 		long repositoryEntryId = getRepositoryEntryId(
 			folderId, fileEntryId, fileVersionId);
 
+		if (repositoryEntryId == folderId) {
+			DLFolder dlFolder = dlFolderLocalService.fetchDLFolder(folderId);
+
+			if ((dlFolder != null) && dlFolder.isMountPoint()) {
+				return getLocalRepositoryImpl(dlFolder.getRepositoryId());
+			}
+		}
+
 		LocalRepository localRepositoryImpl =
 			_localRepositoriesByRepositoryEntryId.get(repositoryEntryId);
 
@@ -226,13 +236,6 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 			repositoryEntryId, localRepositoryImpl);
 
 		return localRepositoryImpl;
-	}
-
-	@Override
-	public Repository getRepository(long repositoryId)
-		throws PortalException, SystemException {
-
-		return repositoryPersistence.findByPrimaryKey(repositoryId);
 	}
 
 	public com.liferay.portal.kernel.repository.Repository getRepositoryImpl(
@@ -275,6 +278,14 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 
 		long repositoryEntryId = getRepositoryEntryId(
 			folderId, fileEntryId, fileVersionId);
+
+		if (repositoryEntryId == folderId) {
+			DLFolder dlFolder = dlFolderLocalService.fetchDLFolder(folderId);
+
+			if ((dlFolder != null) && dlFolder.isMountPoint()) {
+				return getRepositoryImpl(dlFolder.getRepositoryId());
+			}
+		}
 
 		com.liferay.portal.kernel.repository.Repository repositoryImpl =
 			_repositoriesByEntryId.get(repositoryEntryId);

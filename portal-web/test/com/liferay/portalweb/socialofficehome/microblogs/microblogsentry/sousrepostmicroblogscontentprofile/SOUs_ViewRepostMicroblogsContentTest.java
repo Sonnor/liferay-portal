@@ -23,7 +23,7 @@ import com.liferay.portalweb.portal.util.RuntimeVariables;
 public class SOUs_ViewRepostMicroblogsContentTest extends BaseTestCase {
 	public void testSOUs_ViewRepostMicroblogsContent()
 		throws Exception {
-		selenium.open("/user/socialoffice01/home1");
+		selenium.open("/user/socialoffice01/so/dashboard");
 		loadRequiredJavaScriptModules();
 
 		for (int second = 0;; second++) {
@@ -46,7 +46,7 @@ public class SOUs_ViewRepostMicroblogsContentTest extends BaseTestCase {
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
 		assertEquals(RuntimeVariables.replace(
-				"repost-fromJoe Bloggs: Microblogs Post"),
+				"Reposted From Joe Bloggs: Microblogs Post"),
 			selenium.getText("xPath=(//div[@class='activity-title'])[1]"));
 
 		for (int second = 0;; second++) {

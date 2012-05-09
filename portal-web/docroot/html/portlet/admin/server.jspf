@@ -74,6 +74,7 @@ numberFormat.setMinimumIntegerDigits(2);
 								<%
 								}
 								%>
+
 							</aui:select>
 						</aui:fieldset>
 
@@ -547,9 +548,26 @@ numberFormat.setMinimumIntegerDigits(2);
 				<aui:fieldset>
 					<liferay-ui:panel-container extended="<%= true %>" id="adminExternalServicesPanelContainer" persistState="<%= true %>">
 						<liferay-ui:panel collapsible="<%= true %>" extended="<%= true %>" id="adminImageMagickConversionPanel" persistState="<%= true %>" title="enabling-imagemagick-provides-document-preview-functionality">
-							<aui:input label="enabled" name="imageMagickEnabled" type="checkbox" value="<%= PrefsPropsUtil.getBoolean(PropsKeys.IMAGEMAGICK_ENABLED) %>" />
+							<aui:input label="enabled" name="imageMagickEnabled" type="checkbox" value="<%= ImageMagickUtil.isEnabled() %>" />
 
-							<aui:input cssClass="lfr-input-text-container" label="path" name="imageMagickPath" type="text" value="<%= PDFProcessorUtil.getGlobalSearchPath() %>" />
+							<aui:input cssClass="lfr-input-text-container" label="path" name="imageMagickPath" type="text" value="<%= ImageMagickUtil.getGlobalSearchPath() %>" />
+
+							<aui:fieldset label="resource-limits">
+
+								<%
+								Properties resourceLimitsProperties = ImageMagickUtil.getResourceLimitsProperties();
+
+								for (String label : _IMAGEMAGICK_RESOURCE_LIMIT_LABELS) {
+									String name = "imageMagickLimit" + StringUtil.upperCaseFirstLetter(label);
+								%>
+
+									<aui:input cssClass="lfr-input-text-container" label="<%= label %>" name="<%= name %>" type="text" value="<%= resourceLimitsProperties.getProperty(label) %>" />
+
+								<%
+								}
+								%>
+
+							</aui:fieldset>
 						</liferay-ui:panel>
 
 						<liferay-ui:panel collapsible="<%= true %>" extended="<%= true %>" id="adminOpenOfficeConversionPanel" persistState="<%= true %>" title="enabling-openoffice-integration-provides-document-conversion-functionality">
@@ -603,6 +621,7 @@ numberFormat.setMinimumIntegerDigits(2);
 						<%
 						}
 						%>
+
 					</aui:select>
 
 					<aui:input cssClass="lfr-textarea-container" name="script" type="textarea" value="<%= script %>" />
@@ -657,30 +676,28 @@ numberFormat.setMinimumIntegerDigits(2);
 
 				numberFormat = NumberFormat.getInstance(locale);
 
-				long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+				long totalMemory = runtime.totalMemory();
+				long usedMemory = totalMemory - runtime.freeMemory();
 				%>
 
 				<div>
+					<portlet:resourceURL var="totalMemoryChartURL">
+						<portlet:param name="struts_action" value="/admin_server/view_chart" />
+						<portlet:param name="type" value="total" />
+						<portlet:param name="totalMemory" value="<%= String.valueOf(totalMemory) %>" />
+						<portlet:param name="usedMemory" value="<%= String.valueOf(usedMemory) %>" />
+					</portlet:resourceURL>
 
-					<%
-					DefaultValueDataset dataset = new DefaultValueDataset(usedMemory * 100 / runtime.totalMemory());
+					<img border="0" src="<%= totalMemoryChartURL %>" />
 
-					MeterPlot plot = _getMeterPlot(dataset, pageContext);
+					<portlet:resourceURL var="maxMemoryChartURL">
+						<portlet:param name="struts_action" value="/admin_server/view_chart" />
+						<portlet:param name="type" value="max" />
+						<portlet:param name="maxMemory" value="<%= String.valueOf(runtime.maxMemory()) %>" />
+						<portlet:param name="usedMemory" value="<%= String.valueOf(usedMemory) %>" />
+					</portlet:resourceURL>
 
-					JFreeChart chart = _getChart(LanguageUtil.get(pageContext, "used-memory") + " / " + LanguageUtil.get(pageContext, "total-memory"), plot);
-					%>
-
-					<img border="0" src="<%= themeDisplay.getPathContext() %>/display_chart?filename=<%= ServletUtilities.saveChartAsPNG(chart, 280, 180, null, null) %>" />
-
-					<%
-					dataset = new DefaultValueDataset(usedMemory * 100 / runtime.maxMemory());
-
-					plot = _getMeterPlot(dataset, pageContext);
-
-					chart = _getChart(LanguageUtil.get(pageContext, "used-memory") + " / " + LanguageUtil.get(pageContext, "maximum-memory"), plot);
-					%>
-
-					<img border="0" src="<%= themeDisplay.getPathContext() %>/display_chart?filename=<%= ServletUtilities.saveChartAsPNG(chart, 280, 180, null, null) %>" />
+					<img border="0" src="<%= maxMemoryChartURL %>" />
 				</div>
 
 				<br />
@@ -798,38 +815,5 @@ numberFormat.setMinimumIntegerDigits(2);
 </c:choose>
 
 <%!
-private JFreeChart _getChart(String title, MeterPlot plot) {
-	JFreeChart chart = new JFreeChart(title, new Font(null, Font.PLAIN, 13), plot, true);
-
-	chart.setBackgroundPaint(Color.white);
-
-	chart.removeLegend();
-
-	return chart;
-}
-
-private MeterPlot _getMeterPlot(DefaultValueDataset dataset, PageContext pageContext) {
-	MeterPlot plot = new MeterPlot(dataset);
-
-	plot.setDialBackgroundPaint(Color.white);
-	plot.setDialShape(DialShape.PIE);
-	plot.setDialOutlinePaint(Color.gray);
-	plot.setTickLabelFont(new Font(null, Font.PLAIN, 10));
-	plot.setTickLabelPaint(Color.darkGray);
-	plot.setTickLabelsVisible(true);
-	plot.setTickPaint(Color.lightGray);
-	plot.setTickSize(5D);
-	plot.setMeterAngle(180);
-	plot.setNeedlePaint(Color.darkGray);
-	plot.setRange(new Range(0.0D, 100D));
-	plot.setValueFont(new Font(null, Font.PLAIN, 10));
-	plot.setValuePaint(Color.black);
-	plot.setUnits("%");
-
-	plot.addInterval(new MeterInterval(LanguageUtil.get(pageContext, "normal"), new Range(0.0D, 75D), Color.lightGray, new BasicStroke(2.0F), new Color(0, 255, 0, 64)));
-	plot.addInterval(new MeterInterval(LanguageUtil.get(pageContext, "warning"), new Range(75D, 90D), Color.lightGray, new BasicStroke(2.0F), new Color(255, 255, 0, 64)));
-	plot.addInterval(new MeterInterval(LanguageUtil.get(pageContext, "critical"), new Range(90D, 100D), Color.lightGray, new BasicStroke(2.0F), new Color(255, 0, 0, 128)));
-
-	return plot;
-}
+private static final String[] _IMAGEMAGICK_RESOURCE_LIMIT_LABELS= {"area", "disk", "file", "map", "memory", "thread", "time"};
 %>

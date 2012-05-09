@@ -189,9 +189,9 @@
 												monthParam="startDateMonth"
 												monthValue="<%= yesterday.get(Calendar.MONTH) %>"
 												yearParam="startDateYear"
-												yearValue="<%= yesterday.get(Calendar.YEAR) %>"
-												yearRangeStart="<%= yesterday.get(Calendar.YEAR) - 100 %>"
 												yearRangeEnd="<%= yesterday.get(Calendar.YEAR) %>"
+												yearRangeStart="<%= yesterday.get(Calendar.YEAR) - 100 %>"
+												yearValue="<%= yesterday.get(Calendar.YEAR) %>"
 											/>
 
 											&nbsp;
@@ -202,9 +202,9 @@
 												disabled="<%= false %>"
 												hourParam='<%= "startDateHour" %>'
 												hourValue="<%= yesterday.get(Calendar.HOUR) %>"
+												minuteInterval="<%= 1 %>"
 												minuteParam='<%= "startDateMinute" %>'
 												minuteValue="<%= yesterday.get(Calendar.MINUTE) %>"
-												minuteInterval="<%= 1 %>"
 											/>
 										</aui:field-wrapper>
 									</li>
@@ -219,9 +219,9 @@
 												monthParam="endDateMonth"
 												monthValue="<%= today.get(Calendar.MONTH) %>"
 												yearParam="endDateYear"
-												yearValue="<%= today.get(Calendar.YEAR) %>"
-												yearRangeStart="<%= today.get(Calendar.YEAR) - 100 %>"
 												yearRangeEnd="<%= today.get(Calendar.YEAR) %>"
+												yearRangeStart="<%= today.get(Calendar.YEAR) - 100 %>"
+												yearValue="<%= today.get(Calendar.YEAR) %>"
 											/>
 
 											&nbsp;
@@ -249,22 +249,9 @@
 			<aui:input helpMessage="export-import-portlet-permissions-help" label="permissions" name="<%= PortletDataHandlerKeys.PERMISSIONS %>" type="checkbox" />
 
 			<ul id="<portlet:namespace />permissionsUl">
-				<c:choose>
-					<c:when test="<%= (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 5) || (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) %>">
-						<li class="tree-item">
-							<aui:input label="permissions-assigned-to-roles" name="permissinsAssignedToRoles" type="checkbox" value="<%= true %>" />
-						</li>
-					</c:when>
-					<c:otherwise>
-						<li class="tree-item">
-							<aui:input label="permissions-assigned-to-organizations-user-groups-roles-and-sites" name="permissionsAssignedToOrganizationsUserGroupsRolesAndCommunities" type="checkbox" value="<%= true %>" />
-						</li>
-
-						<li class="tree-item">
-							<aui:input label="permissions-assigned-to-users" name="<%= PortletDataHandlerKeys.USER_PERMISSIONS %>" type="checkbox" />
-						</li>
-					</c:otherwise>
-				</c:choose>
+				<li class="tree-item">
+					<aui:input label="permissions-assigned-to-roles" name="permissinsAssignedToRoles" type="checkbox" value="<%= true %>" />
+				</li>
 			</ul>
 		</li>
 		<li class="tree-item">

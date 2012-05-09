@@ -157,7 +157,9 @@ public class FacetedSearcher extends BaseIndexer {
 		String keywords = searchContext.getKeywords();
 
 		if (Validator.isNotNull(keywords)) {
-			searchQuery.addExactTerm(Field.ASSET_CATEGORY_NAMES, keywords);
+			addSearchLocalizedTerm(
+				searchQuery, searchContext, Field.ASSET_CATEGORY_TITLES, false);
+
 			searchQuery.addExactTerm(Field.ASSET_TAG_NAMES, keywords);
 			searchQuery.addTerms(Field.KEYWORDS, keywords);
 		}
@@ -166,6 +168,12 @@ public class FacetedSearcher extends BaseIndexer {
 			Indexer indexer = IndexerRegistryUtil.getIndexer(entryClassName);
 
 			if (indexer == null) {
+				continue;
+			}
+
+			String searchEngineId = searchContext.getSearchEngineId();
+
+			if (!searchEngineId.equals(indexer.getSearchEngineId())) {
 				continue;
 			}
 
@@ -218,6 +226,12 @@ public class FacetedSearcher extends BaseIndexer {
 			Indexer indexer = IndexerRegistryUtil.getIndexer(entryClassName);
 
 			if (indexer == null) {
+				continue;
+			}
+
+			String searchEngineId = searchContext.getSearchEngineId();
+
+			if (!searchEngineId.equals(indexer.getSearchEngineId())) {
 				continue;
 			}
 

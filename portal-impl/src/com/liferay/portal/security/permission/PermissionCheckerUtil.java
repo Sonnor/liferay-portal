@@ -53,7 +53,7 @@ public class PermissionCheckerUtil {
 			PermissionThreadLocal.setPermissionChecker(permissionChecker);
 		}
 		catch (Exception e) {
-			_log.error(e);
+			_log.error(e, e);
 		}
 	}
 

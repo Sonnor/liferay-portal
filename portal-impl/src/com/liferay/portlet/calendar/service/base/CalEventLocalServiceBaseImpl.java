@@ -23,15 +23,14 @@ import com.liferay.portal.kernel.bean.IdentifiableBean;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
-import com.liferay.portal.kernel.search.SearchException;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.model.PersistedModel;
+import com.liferay.portal.service.BaseLocalServiceImpl;
 import com.liferay.portal.service.CompanyLocalService;
 import com.liferay.portal.service.CompanyService;
 import com.liferay.portal.service.GroupLocalService;
@@ -40,7 +39,7 @@ import com.liferay.portal.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.service.PortletPreferencesLocalService;
 import com.liferay.portal.service.PortletPreferencesService;
 import com.liferay.portal.service.ResourceLocalService;
-import com.liferay.portal.service.ResourceService;
+import com.liferay.portal.service.SubscriptionLocalService;
 import com.liferay.portal.service.UserLocalService;
 import com.liferay.portal.service.UserService;
 import com.liferay.portal.service.persistence.CompanyPersistence;
@@ -48,8 +47,7 @@ import com.liferay.portal.service.persistence.GroupFinder;
 import com.liferay.portal.service.persistence.GroupPersistence;
 import com.liferay.portal.service.persistence.PortletPreferencesFinder;
 import com.liferay.portal.service.persistence.PortletPreferencesPersistence;
-import com.liferay.portal.service.persistence.ResourceFinder;
-import com.liferay.portal.service.persistence.ResourcePersistence;
+import com.liferay.portal.service.persistence.SubscriptionPersistence;
 import com.liferay.portal.service.persistence.UserFinder;
 import com.liferay.portal.service.persistence.UserPersistence;
 
@@ -60,6 +58,7 @@ import com.liferay.portlet.asset.service.AssetTagLocalService;
 import com.liferay.portlet.asset.service.AssetTagService;
 import com.liferay.portlet.asset.service.persistence.AssetEntryFinder;
 import com.liferay.portlet.asset.service.persistence.AssetEntryPersistence;
+import com.liferay.portlet.asset.service.persistence.AssetLinkFinder;
 import com.liferay.portlet.asset.service.persistence.AssetLinkPersistence;
 import com.liferay.portlet.asset.service.persistence.AssetTagFinder;
 import com.liferay.portlet.asset.service.persistence.AssetTagPersistence;
@@ -93,7 +92,7 @@ import javax.sql.DataSource;
  * @see com.liferay.portlet.calendar.service.CalEventLocalServiceUtil
  * @generated
  */
-public abstract class CalEventLocalServiceBaseImpl
+public abstract class CalEventLocalServiceBaseImpl extends BaseLocalServiceImpl
 	implements CalEventLocalService, IdentifiableBean {
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -108,25 +107,11 @@ public abstract class CalEventLocalServiceBaseImpl
 	 * @return the cal event that was added
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public CalEvent addCalEvent(CalEvent calEvent) throws SystemException {
 		calEvent.setNew(true);
 
-		calEvent = calEventPersistence.update(calEvent, false);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(calEvent);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return calEvent;
+		return calEventPersistence.update(calEvent, false);
 	}
 
 	/**
@@ -143,48 +128,30 @@ public abstract class CalEventLocalServiceBaseImpl
 	 * Deletes the cal event with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param eventId the primary key of the cal event
+	 * @return the cal event that was removed
 	 * @throws PortalException if a cal event with the primary key could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteCalEvent(long eventId)
+	@Indexable(type = IndexableType.DELETE)
+	public CalEvent deleteCalEvent(long eventId)
 		throws PortalException, SystemException {
-		CalEvent calEvent = calEventPersistence.remove(eventId);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.delete(calEvent);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+		return calEventPersistence.remove(eventId);
 	}
 
 	/**
 	 * Deletes the cal event from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param calEvent the cal event
+	 * @return the cal event that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteCalEvent(CalEvent calEvent) throws SystemException {
-		calEventPersistence.remove(calEvent);
+	@Indexable(type = IndexableType.DELETE)
+	public CalEvent deleteCalEvent(CalEvent calEvent) throws SystemException {
+		return calEventPersistence.remove(calEvent);
+	}
 
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.delete(calEvent);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+	public DynamicQuery dynamicQuery() {
+		return DynamicQueryFactoryUtil.forClass(CalEvent.class, getClassLoader());
 	}
 
 	/**
@@ -322,6 +289,7 @@ public abstract class CalEventLocalServiceBaseImpl
 	 * @return the cal event that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public CalEvent updateCalEvent(CalEvent calEvent) throws SystemException {
 		return updateCalEvent(calEvent, true);
 	}
@@ -334,26 +302,12 @@ public abstract class CalEventLocalServiceBaseImpl
 	 * @return the cal event that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public CalEvent updateCalEvent(CalEvent calEvent, boolean merge)
 		throws SystemException {
 		calEvent.setNew(false);
 
-		calEvent = calEventPersistence.update(calEvent, merge);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(calEvent);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return calEvent;
+		return calEventPersistence.update(calEvent, merge);
 	}
 
 	/**
@@ -687,57 +641,41 @@ public abstract class CalEventLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the resource remote service.
+	 * Returns the subscription local service.
 	 *
-	 * @return the resource remote service
+	 * @return the subscription local service
 	 */
-	public ResourceService getResourceService() {
-		return resourceService;
+	public SubscriptionLocalService getSubscriptionLocalService() {
+		return subscriptionLocalService;
 	}
 
 	/**
-	 * Sets the resource remote service.
+	 * Sets the subscription local service.
 	 *
-	 * @param resourceService the resource remote service
+	 * @param subscriptionLocalService the subscription local service
 	 */
-	public void setResourceService(ResourceService resourceService) {
-		this.resourceService = resourceService;
+	public void setSubscriptionLocalService(
+		SubscriptionLocalService subscriptionLocalService) {
+		this.subscriptionLocalService = subscriptionLocalService;
 	}
 
 	/**
-	 * Returns the resource persistence.
+	 * Returns the subscription persistence.
 	 *
-	 * @return the resource persistence
+	 * @return the subscription persistence
 	 */
-	public ResourcePersistence getResourcePersistence() {
-		return resourcePersistence;
+	public SubscriptionPersistence getSubscriptionPersistence() {
+		return subscriptionPersistence;
 	}
 
 	/**
-	 * Sets the resource persistence.
+	 * Sets the subscription persistence.
 	 *
-	 * @param resourcePersistence the resource persistence
+	 * @param subscriptionPersistence the subscription persistence
 	 */
-	public void setResourcePersistence(ResourcePersistence resourcePersistence) {
-		this.resourcePersistence = resourcePersistence;
-	}
-
-	/**
-	 * Returns the resource finder.
-	 *
-	 * @return the resource finder
-	 */
-	public ResourceFinder getResourceFinder() {
-		return resourceFinder;
-	}
-
-	/**
-	 * Sets the resource finder.
-	 *
-	 * @param resourceFinder the resource finder
-	 */
-	public void setResourceFinder(ResourceFinder resourceFinder) {
-		this.resourceFinder = resourceFinder;
+	public void setSubscriptionPersistence(
+		SubscriptionPersistence subscriptionPersistence) {
+		this.subscriptionPersistence = subscriptionPersistence;
 	}
 
 	/**
@@ -922,6 +860,24 @@ public abstract class CalEventLocalServiceBaseImpl
 	public void setAssetLinkPersistence(
 		AssetLinkPersistence assetLinkPersistence) {
 		this.assetLinkPersistence = assetLinkPersistence;
+	}
+
+	/**
+	 * Returns the asset link finder.
+	 *
+	 * @return the asset link finder
+	 */
+	public AssetLinkFinder getAssetLinkFinder() {
+		return assetLinkFinder;
+	}
+
+	/**
+	 * Sets the asset link finder.
+	 *
+	 * @param assetLinkFinder the asset link finder
+	 */
+	public void setAssetLinkFinder(AssetLinkFinder assetLinkFinder) {
+		this.assetLinkFinder = assetLinkFinder;
 	}
 
 	/**
@@ -1138,12 +1094,6 @@ public abstract class CalEventLocalServiceBaseImpl
 		_beanIdentifier = beanIdentifier;
 	}
 
-	protected ClassLoader getClassLoader() {
-		Class<?> clazz = getClass();
-
-		return clazz.getClassLoader();
-	}
-
 	protected Class<?> getModelClass() {
 		return CalEvent.class;
 	}
@@ -1207,12 +1157,10 @@ public abstract class CalEventLocalServiceBaseImpl
 	protected PortletPreferencesFinder portletPreferencesFinder;
 	@BeanReference(type = ResourceLocalService.class)
 	protected ResourceLocalService resourceLocalService;
-	@BeanReference(type = ResourceService.class)
-	protected ResourceService resourceService;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
-	@BeanReference(type = ResourceFinder.class)
-	protected ResourceFinder resourceFinder;
+	@BeanReference(type = SubscriptionLocalService.class)
+	protected SubscriptionLocalService subscriptionLocalService;
+	@BeanReference(type = SubscriptionPersistence.class)
+	protected SubscriptionPersistence subscriptionPersistence;
 	@BeanReference(type = UserLocalService.class)
 	protected UserLocalService userLocalService;
 	@BeanReference(type = UserService.class)
@@ -1233,6 +1181,8 @@ public abstract class CalEventLocalServiceBaseImpl
 	protected AssetLinkLocalService assetLinkLocalService;
 	@BeanReference(type = AssetLinkPersistence.class)
 	protected AssetLinkPersistence assetLinkPersistence;
+	@BeanReference(type = AssetLinkFinder.class)
+	protected AssetLinkFinder assetLinkFinder;
 	@BeanReference(type = AssetTagLocalService.class)
 	protected AssetTagLocalService assetTagLocalService;
 	@BeanReference(type = AssetTagService.class)
@@ -1255,6 +1205,5 @@ public abstract class CalEventLocalServiceBaseImpl
 	protected SocialActivityFinder socialActivityFinder;
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
 	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
-	private static Log _log = LogFactoryUtil.getLog(CalEventLocalServiceBaseImpl.class);
 	private String _beanIdentifier;
 }

@@ -29,10 +29,6 @@ public class PDFProcessorUtil {
 		getPDFProcessor().generateImages(fileVersion);
 	}
 
-	public static String getGlobalSearchPath() throws Exception {
-		return getPDFProcessor().getGlobalSearchPath();
-	}
-
 	public static PDFProcessor getPDFProcessor() {
 		return _pdfProcessor;
 	}
@@ -79,16 +75,8 @@ public class PDFProcessorUtil {
 		return getPDFProcessor().isDocumentSupported(mimeType);
 	}
 
-	public static boolean isImageMagickEnabled() throws Exception {
-		return getPDFProcessor().isImageMagickEnabled();
-	}
-
 	public static boolean isSupported(String mimeType) {
 		return getPDFProcessor().isSupported(mimeType);
-	}
-
-	public static void reset() throws Exception {
-		getPDFProcessor().reset();
 	}
 
 	public static void trigger(FileVersion fileVersion) {

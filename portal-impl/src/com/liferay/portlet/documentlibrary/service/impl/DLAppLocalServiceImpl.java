@@ -14,7 +14,6 @@
 
 package com.liferay.portlet.documentlibrary.service.impl;
 
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
@@ -23,11 +22,10 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.model.Repository;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFolder;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.documentlibrary.NoSuchFileEntryException;
@@ -36,6 +34,7 @@ import com.liferay.portlet.documentlibrary.model.DLFileShortcut;
 import com.liferay.portlet.documentlibrary.model.DLFolder;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.base.DLAppLocalServiceBaseImpl;
+import com.liferay.portlet.documentlibrary.util.DLAppUtil;
 import com.liferay.portlet.documentlibrary.util.DLProcessorRegistryUtil;
 
 import java.io.File;
@@ -169,11 +168,14 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException, SystemException {
 
-		if (file == null || !file.exists() || (file.length() == 0)) {
+		if ((file == null) || !file.exists() || (file.length() == 0)) {
 			return addFileEntry(
 				userId, repositoryId, folderId, sourceFileName, mimeType, title,
 				description, changeLog, null, 0, serviceContext);
 		}
+
+		mimeType = DLAppUtil.getMimeType(
+			sourceFileName, mimeType, title, file, null);
 
 		LocalRepository localRepository = getLocalRepository(repositoryId);
 
@@ -233,6 +235,9 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 			is = new UnsyncByteArrayInputStream(new byte[0]);
 			size = 0;
 		}
+
+		mimeType = DLAppUtil.getMimeType(
+			sourceFileName, mimeType, title, null, is);
 
 		LocalRepository localRepository = getLocalRepository(repositoryId);
 
@@ -438,153 +443,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Returns the file entries in the folder.
-	 *
-	 * @param  repositoryId the primary key of the file entry's repository
-	 * @param  folderId the primary key of the file entry's folder
-	 * @return the file entries in the folder
-	 * @throws PortalException if the folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<FileEntry> getFileEntries(long repositoryId, long folderId)
-		throws PortalException, SystemException {
-
-		return getFileEntries(
-			repositoryId, folderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
-	}
-
-	/**
-	 * Returns a range of all the file entries in the folder.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link
-	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  repositoryId the primary key of the file entry's repository
-	 * @param  folderId the primary key of the file entry's folder
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @return the range of file entries in the folder
-	 * @throws PortalException if the folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<FileEntry> getFileEntries(
-			long repositoryId, long folderId, int start, int end)
-		throws PortalException, SystemException {
-
-		return getFileEntries(repositoryId, folderId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the file entries in the folder.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link
-	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  repositoryId the primary key of the file entry's repository
-	 * @param  folderId the primary key of the file entry's folder
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @param  obc the comparator to order the file entries (optionally
-	 *         <code>null</code>)
-	 * @return the range of file entries in the folder ordered by comparator
-	 *         <code>obc</code>
-	 * @throws PortalException if the folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<FileEntry> getFileEntries(
-			long repositoryId, long folderId, int start, int end,
-			OrderByComparator obc)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getFileEntries(folderId, start, end, obc);
-	}
-
-	/**
-	 * Returns a range of all the file entries and shortcuts in the folder.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link
-	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  repositoryId the primary key of the repository
-	 * @param  folderId the primary key of the folder
-	 * @param  status the workflow status
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @return the range of file entries and shortcuts in the folder
-	 * @throws PortalException if the folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Object> getFileEntriesAndFileShortcuts(
-			long repositoryId, long folderId, int status, int start, int end)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getFileEntriesAndFileShortcuts(
-			folderId, status, start, end);
-	}
-
-	/**
-	 * Returns the number of file entries and shortcuts in the folder.
-	 *
-	 * @param  repositoryId the primary key of the repository
-	 * @param  folderId the primary key of the folder
-	 * @param  status the workflow status
-	 * @return the number of file entries and shortcuts in the folder
-	 * @throws PortalException if the folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public int getFileEntriesAndFileShortcutsCount(
-			long repositoryId, long folderId, int status)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getFileEntriesAndFileShortcutsCount(
-			folderId, status);
-	}
-
-	/**
-	 * Returns the number of file entries in the folder.
-	 *
-	 * @param  repositoryId the primary key of the file entry's repository
-	 * @param  folderId the primary key of the file entry's folder
-	 * @return the number of file entries in the folder
-	 * @throws PortalException if the folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public int getFileEntriesCount(long repositoryId, long folderId)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getFileEntriesCount(folderId);
-	}
-
-	/**
 	 * Returns the file entry with the primary key.
 	 *
 	 * @param  fileEntryId the primary key of the file entry
@@ -647,12 +505,10 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 			List<com.liferay.portal.model.Repository> repositories =
 				repositoryPersistence.findByGroupId(groupId);
 
-			for (int i = 0; i < repositories.size(); i++) {
+			for (Repository repository : repositories) {
 				try {
-					long repositoryId = repositories.get(i).getRepositoryId();
-
 					LocalRepository localRepository = getLocalRepository(
-						repositoryId);
+						repository.getRepositoryId());
 
 					return localRepository.getFileEntryByUuid(uuid);
 				}
@@ -755,320 +611,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Returns all immediate subfolders of the parent folder.
-	 *
-	 * @param  repositoryId the primary key of the folder's repository
-	 * @param  parentFolderId the primary key of the folder's parent folder
-	 * @return the immediate subfolders of the parent folder
-	 * @throws PortalException if the parent folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Folder> getFolders(long repositoryId, long parentFolderId)
-		throws PortalException, SystemException {
-
-		return getFolders(repositoryId, parentFolderId, true);
-	}
-
-	/**
-	 * Returns all immediate subfolders of the parent folder, optionally
-	 * including mount folders for third-party repositories.
-	 *
-	 * @param  repositoryId the primary key of the folder's repository
-	 * @param  parentFolderId the primary key of the folder's parent folder
-	 * @param  includeMountFolders whether to include mount folders for
-	 *         third-party repositories
-	 * @return the immediate subfolders of the parent folder
-	 * @throws PortalException if the parent folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Folder> getFolders(
-			long repositoryId, long parentFolderId, boolean includeMountFolders)
-		throws PortalException, SystemException {
-
-		return getFolders(
-			repositoryId, parentFolderId, includeMountFolders,
-			QueryUtil.ALL_POS, QueryUtil.ALL_POS);
-	}
-
-	/**
-	 * Returns a range of all the immediate subfolders of the parent folder,
-	 * optionally including mount folders for third-party repositories.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link
-	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  repositoryId the primary key of the folder's repository
-	 * @param  parentFolderId the primary key of the folder's parent folder
-	 * @param  includeMountFolders whether to include mount folders for
-	 *         third-party repositories
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @return the range of immediate subfolders of the parent folder
-	 * @throws PortalException if the parent folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Folder> getFolders(
-			long repositoryId, long parentFolderId, boolean includeMountFolders,
-			int start, int end)
-		throws PortalException, SystemException {
-
-		return getFolders(
-			repositoryId, parentFolderId, includeMountFolders,
-			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the immediate subfolders of the parent
-	 * folder.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link
-	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  repositoryId the primary key of the folder's repository
-	 * @param  parentFolderId the primary key of the folder's parent folder
-	 * @param  includeMountFolders whether to include mount folders for
-	 *         third-party repositories
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @param  obc the comparator to order the folders (optionally
-	 *         <code>null</code>)
-	 * @return the range of immediate subfolders of the parent folder ordered by
-	 *         comparator <code>obc</code>
-	 * @throws PortalException if the parent folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Folder> getFolders(
-			long repositoryId, long parentFolderId, boolean includeMountFolders,
-			int start, int end, OrderByComparator obc)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getFolders(
-			parentFolderId, includeMountFolders, start, end, obc);
-	}
-
-	/**
-	 * Returns a range of all the immediate subfolders of the parent folder.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link
-	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  repositoryId the primary key of the folder's repository
-	 * @param  parentFolderId the primary key of the folder's parent folder
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @return the range of immediate subfolders of the parent folder
-	 * @throws PortalException if the parent folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Folder> getFolders(
-			long repositoryId, long parentFolderId, int start, int end)
-		throws PortalException, SystemException {
-
-		return getFolders(repositoryId, parentFolderId, true, start, end);
-	}
-
-	/**
-	 * Returns an ordered range of all the immediate subfolders of the parent
-	 * folder.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link
-	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  repositoryId the primary key of the folder's repository
-	 * @param  parentFolderId the primary key of the folder's parent folder
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @param  obc the comparator to order the folders (optionally
-	 *         <code>null</code>)
-	 * @return the range of immediate subfolders of the parent folder ordered by
-	 *         comparator <code>obc</code>
-	 * @throws PortalException if the parent folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Folder> getFolders(
-			long repositoryId, long parentFolderId, int start, int end,
-			OrderByComparator obc)
-		throws PortalException, SystemException {
-
-		return getFolders(repositoryId, parentFolderId, true, start, end, obc);
-	}
-
-	/**
-	 * Returns an ordered range of all the immediate subfolders, file entries,
-	 * and file shortcuts in the parent folder.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link
-	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  repositoryId the primary key of the repository
-	 * @param  folderId the primary key of the parent folder
-	 * @param  status the workflow status
-	 * @param  includeMountFolders whether to include mount folders for
-	 *         third-party repositories
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @param  obc the comparator to order the results (optionally
-	 *         <code>null</code>)
-	 * @return the range of immediate subfolders, file entries, and file
-	 *         shortcuts in the parent folder ordered by comparator
-	 *         <code>obc</code>
-	 * @throws PortalException if the folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
-			long repositoryId, long folderId, int status,
-			boolean includeMountFolders, int start, int end,
-			OrderByComparator obc)
-		throws PortalException, SystemException {
-
-		return getFoldersAndFileEntriesAndFileShortcuts(
-			repositoryId, folderId, status, null, includeMountFolders, start,
-			end, obc);
-	}
-
-	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
-			long repositoryId, long folderId, int status, String[] mimeTypes,
-			boolean includeMountFolders, int start, int end,
-			OrderByComparator obc)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getFoldersAndFileEntriesAndFileShortcuts(
-			folderId, status, mimeTypes, includeMountFolders, start, end, obc);
-	}
-
-	/**
-	 * Returns the number of immediate subfolders, file entries, and file
-	 * shortcuts in the parent folder.
-	 *
-	 * @param  repositoryId the primary key of the repository
-	 * @param  folderId the primary key of the parent folder
-	 * @param  status the workflow status
-	 * @param  includeMountFolders whether to include mount folders for
-	 *         third-party repositories
-	 * @return the number of immediate subfolders, file entries, and file
-	 *         shortcuts in the parent folder
-	 * @throws PortalException if the folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public int getFoldersAndFileEntriesAndFileShortcutsCount(
-			long repositoryId, long folderId, int status,
-			boolean includeMountFolders)
-		throws PortalException, SystemException {
-
-		return getFoldersAndFileEntriesAndFileShortcutsCount(
-			repositoryId, folderId, status, null, includeMountFolders);
-	}
-
-	public int getFoldersAndFileEntriesAndFileShortcutsCount(
-			long repositoryId, long folderId, int status, String[] mimeTypes,
-			boolean includeMountFolders)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getFoldersAndFileEntriesAndFileShortcutsCount(
-			folderId, status, mimeTypes, includeMountFolders);
-	}
-
-	/**
-	 * Returns the number of immediate subfolders of the parent folder.
-	 *
-	 * @param  repositoryId the primary key of the folder's repository
-	 * @param  parentFolderId the primary key of the folder's parent folder
-	 * @return the number of immediate subfolders of the parent folder
-	 * @throws PortalException if the parent folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public int getFoldersCount(long repositoryId, long parentFolderId)
-		throws PortalException, SystemException {
-
-		return getFoldersCount(repositoryId, parentFolderId, true);
-	}
-
-	/**
-	 * Returns the number of immediate subfolders of the parent folder,
-	 * optionally including mount folders for third-party repositories.
-	 *
-	 * @param  repositoryId the primary key of the folder's repository
-	 * @param  parentFolderId the primary key of the folder's parent folder
-	 * @param  includeMountFolders whether to include mount folders for
-	 *         third-party repositories
-	 * @return the number of immediate subfolders of the parent folder
-	 * @throws PortalException if the parent folder could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public int getFoldersCount(
-			long repositoryId, long parentFolderId, boolean includeMountFolders)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getFoldersCount(
-			parentFolderId, includeMountFolders);
-	}
-
-	/**
-	 * Returns the number of immediate subfolders and file entries across the
-	 * folders.
-	 *
-	 * @param  repositoryId the primary key of the repository
-	 * @param  folderIds the primary keys of folders from which to count
-	 *         immediate subfolders and file entries
-	 * @param  status the workflow status
-	 * @return the number of immediate subfolders and file entries across the
-	 *         folders
-	 * @throws PortalException if the repository could not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public int getFoldersFileEntriesCount(
-			long repositoryId, List<Long> folderIds, int status)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getFoldersFileEntriesCount(folderIds, status);
-	}
-
-	/**
 	 * Returns the mount folder of the repository with the primary key. This
 	 * method is only supported by the Liferay repository.
 	 *
@@ -1084,117 +626,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 		DLFolder dlFolder = dlFolderLocalService.getMountFolder(repositoryId);
 
 		return new LiferayFolder(dlFolder);
-	}
-
-	/**
-	 * Returns all immediate subfolders of the parent folder that are used for
-	 * mounting third-party repositories. This method is only supported by the
-	 * Liferay repository.
-	 *
-	 * @param  repositoryId the primary key of the folder's repository
-	 * @param  parentFolderId the primary key of the folder's parent folder
-	 * @return the immediate subfolders of the parent folder that are used for
-	 *         mounting third-party repositories
-	 * @throws PortalException if the repository or parent folder could not be
-	 *         found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Folder> getMountFolders(long repositoryId, long parentFolderId)
-		throws PortalException, SystemException {
-
-		return getMountFolders(
-			repositoryId, parentFolderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
-	}
-
-	/**
-	 * Returns a range of all the immediate subfolders of the parent folder that
-	 * are used for mounting third-party repositories. This method is only
-	 * supported by the Liferay repository.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link
-	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  repositoryId the primary key of the repository
-	 * @param  parentFolderId the primary key of the parent folder
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @return the range of immediate subfolders of the parent folder that are
-	 *         used for mounting third-party repositories
-	 * @throws PortalException if the repository or parent folder could not be
-	 *         found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Folder> getMountFolders(
-			long repositoryId, long parentFolderId, int start, int end)
-		throws PortalException, SystemException {
-
-		return getMountFolders(repositoryId, parentFolderId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the immediate subfolders of the parent
-	 * folder that are used for mounting third-party repositories. This method
-	 * is only supported by the Liferay repository.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link
-	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  repositoryId the primary key of the folder's repository
-	 * @param  parentFolderId the primary key of the folder's parent folder
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @param  obc the comparator to order the folders (optionally
-	 *         <code>null</code>)
-	 * @return the range of immediate subfolders of the parent folder that are
-	 *         used for mounting third-party repositories ordered by comparator
-	 *         <code>obc</code>
-	 * @throws PortalException if the repository or parent folder could not be
-	 *         found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Folder> getMountFolders(
-			long repositoryId, long parentFolderId, int start, int end,
-			OrderByComparator obc)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getMountFolders(parentFolderId, start, end, obc);
-	}
-
-	/**
-	 * Returns the number of immediate subfolders of the parent folder that are
-	 * used for mounting third-party repositories. This method is only supported
-	 * by the Liferay repository.
-	 *
-	 * @param  repositoryId the primary key of the repository
-	 * @param  parentFolderId the primary key of the parent folder
-	 * @return the number of folders of the parent folder that are used for
-	 *         mounting third-party repositories
-	 * @throws PortalException if the repository or parent folder could not be
-	 *         found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public int getMountFoldersCount(long repositoryId, long parentFolderId)
-		throws PortalException, SystemException {
-
-		LocalRepository localRepository = getLocalRepository(repositoryId);
-
-		return localRepository.getMountFoldersCount(parentFolderId);
 	}
 
 	/**
@@ -1224,10 +655,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 
 			// Move file entries within repository
 
-			FileEntry fileEntry = fromLocalRepository.moveFileEntry(
+			return fromLocalRepository.moveFileEntry(
 				userId, fileEntryId, newFolderId, serviceContext);
-
-			return fileEntry;
 		}
 
 		// Move file entries between repositories
@@ -1367,11 +796,14 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 			boolean majorVersion, File file, ServiceContext serviceContext)
 		throws PortalException, SystemException {
 
-		if (file == null || !file.exists() || file.length() == 0) {
+		if ((file == null) || !file.exists() || (file.length() == 0)) {
 			return updateFileEntry(
 				userId, fileEntryId, sourceFileName, mimeType, title,
 				description, changeLog, majorVersion, null, 0, serviceContext);
 		}
+
+		mimeType = DLAppUtil.getMimeType(
+			sourceFileName, mimeType, title, file, null);
 
 		LocalRepository localRepository = getLocalRepository(0, fileEntryId, 0);
 
@@ -1430,6 +862,9 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 			boolean majorVersion, InputStream is, long size,
 			ServiceContext serviceContext)
 		throws PortalException, SystemException {
+
+		mimeType = DLAppUtil.getMimeType(
+			sourceFileName, mimeType, title, null, is);
 
 		LocalRepository localRepository = getLocalRepository(0, fileEntryId, 0);
 
@@ -1577,7 +1012,7 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 					fileEntry.getTitle(), destinationFileEntry.getMimeType(),
 					destinationFileEntry.getTitle(),
 					destinationFileEntry.getDescription(), StringPool.BLANK,
-					isMajorVersion(fileVersion, previousFileVersion),
+					DLAppUtil.isMajorVersion(fileVersion, previousFileVersion),
 					fileVersion.getContentStream(false), fileVersion.getSize(),
 					serviceContext);
 			}
@@ -1651,17 +1086,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 		}
 
 		return localRepository;
-	}
-
-	protected boolean isMajorVersion(
-		FileVersion previousFileVersion, FileVersion currentFileVersion) {
-
-		long currentVersion = GetterUtil.getLong(
-			currentFileVersion.getVersion());
-		long previousVersion = GetterUtil.getLong(
-			previousFileVersion.getVersion());
-
-		return (currentVersion - previousVersion) >= 1;
 	}
 
 	protected FileEntry moveFileEntries(

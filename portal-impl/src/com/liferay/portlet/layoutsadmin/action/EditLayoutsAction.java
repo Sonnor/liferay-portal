@@ -388,7 +388,7 @@ public class EditLayoutsAction extends PortletAction {
 		if (cmd.equals(Constants.ADD)) {
 			long parentPlid = ParamUtil.getLong(portletRequest, "parentPlid");
 
-			if ((parentPlid == LayoutConstants.DEFAULT_PARENT_LAYOUT_ID)) {
+			if (parentPlid == LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
 				if (!GroupPermissionUtil.contains(
 						permissionChecker, group.getGroupId(),
 						ActionKeys.ADD_LAYOUT)) {
@@ -622,9 +622,9 @@ public class EditLayoutsAction extends PortletAction {
 				return FileUtil.getBytes(inputStream);
 			}
 		}
-		catch (IOException e) {
+		catch (IOException ioe) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to retrieve icon", e);
+				_log.warn("Unable to retrieve icon", ioe);
 			}
 		}
 

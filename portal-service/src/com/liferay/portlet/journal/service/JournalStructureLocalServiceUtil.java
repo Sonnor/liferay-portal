@@ -66,25 +66,32 @@ public class JournalStructureLocalServiceUtil {
 	* Deletes the journal structure with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param id the primary key of the journal structure
+	* @return the journal structure that was removed
 	* @throws PortalException if a journal structure with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteJournalStructure(long id)
+	public static com.liferay.portlet.journal.model.JournalStructure deleteJournalStructure(
+		long id)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteJournalStructure(id);
+		return getService().deleteJournalStructure(id);
 	}
 
 	/**
 	* Deletes the journal structure from the database. Also notifies the appropriate model listeners.
 	*
 	* @param journalStructure the journal structure
+	* @return the journal structure that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteJournalStructure(
+	public static com.liferay.portlet.journal.model.JournalStructure deleteJournalStructure(
 		com.liferay.portlet.journal.model.JournalStructure journalStructure)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteJournalStructure(journalStructure);
+		return getService().deleteJournalStructure(journalStructure);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -379,6 +386,15 @@ public class JournalStructureLocalServiceUtil {
 		return getService().getStructure(groupId, structureId);
 	}
 
+	public static com.liferay.portlet.journal.model.JournalStructure getStructure(
+		long groupId, java.lang.String structureId,
+		boolean includeGlobalStructures)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .getStructure(groupId, structureId, includeGlobalStructures);
+	}
+
 	public static java.util.List<com.liferay.portlet.journal.model.JournalStructure> getStructures()
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getService().getStructures();
@@ -461,14 +477,10 @@ public class JournalStructureLocalServiceUtil {
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(JournalStructureLocalService service) {
-		MethodCache.remove(JournalStructureLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(JournalStructureLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(JournalStructureLocalService.class);
 	}
 
 	private static JournalStructureLocalService _service;

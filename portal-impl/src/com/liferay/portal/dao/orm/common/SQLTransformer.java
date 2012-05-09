@@ -183,8 +183,7 @@ public class SQLTransformer {
 
 	private String _replaceBoolean(String newSQL) {
 		return StringUtil.replace(
-			newSQL,
-			new String[] {"[$FALSE$]", "[$TRUE$]"},
+			newSQL, new String[] {"[$FALSE$]", "[$TRUE$]"},
 			new String[] {_db.getTemplateFalse(), _db.getTemplateTrue()});
 	}
 
@@ -212,7 +211,7 @@ public class SQLTransformer {
 			return matcher.replaceAll("CAST($1 AS TEXT)");
 		}
 		else if (_vendorSQLServer) {
-			return matcher.replaceAll("CAST($1 AS NVARCHAR(4000))");
+			return matcher.replaceAll("CAST($1 AS NVARCHAR(MAX))");
 		}
 		else if (_vendorSybase) {
 			return matcher.replaceAll("CAST($1 AS NVARCHAR(16384))");
@@ -374,7 +373,7 @@ public class SQLTransformer {
 			from = to + 1;
 		}
 
-		sb.append(queryString.substring(from, queryString.length()));
+		sb.append(queryString.substring(from));
 
 		return sb.toString();
 	}

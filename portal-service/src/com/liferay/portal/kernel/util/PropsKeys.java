@@ -99,6 +99,8 @@ public interface PropsKeys {
 
 	public static final String ASSET_PUBLISHER_DISPLAY_STYLES = "asset.publisher.display.styles";
 
+	public static final String ASSET_PUBLISHER_DISPLAY_STYLES_TEMPLATE_CONTENT = "asset.publisher.display.styles.template.content";
+
 	public static final String ASSET_RENDERER_ENABLED = "asset.renderer.enabled.";
 
 	public static final String ASSET_TAG_PROPERTIES_DEFAULT = "asset.tag.properties.default";
@@ -214,6 +216,8 @@ public interface PropsKeys {
 	public static final String BLOGS_ENTRY_COMMENTS_ENABLED = "blogs.entry.comments.enabled";
 
 	public static final String BLOGS_ENTRY_PREVIOUS_AND_NEXT_NAVIGATION_ENABLED = "blogs.entry.previous.and.next.navigation.enabled";
+
+	public static final String BLOGS_ENTRY_URL_TITLE_REGEXP = "blogs.entry.url.title.regexp";
 
 	public static final String BLOGS_IMAGE_EXTENSIONS = "blogs.image.extensions";
 
@@ -333,8 +337,6 @@ public interface PropsKeys {
 
 	public static final String CLUSTER_EXECUTOR_DEBUG_ENABLED = "cluster.executor.debug.enabled";
 
-	public static final String CLUSTER_EXECUTOR_HEARTBEAT_INTERVAL = "cluster.executor.heartbeat.interval";
-
 	public static final String CLUSTER_LINK_AUTODETECT_ADDRESS = "cluster.link.autodetect.address";
 
 	public static final String CLUSTER_LINK_CHANNEL_PROPERTIES_CONTROL = "cluster.link.channel.properties.control";
@@ -391,6 +393,8 @@ public interface PropsKeys {
 
 	public static final String COMPANY_SECURITY_STRANGERS_WITH_MX = "company.security.strangers.with.mx";
 
+	public static final String COMPANY_SETTINGS_FORM_AUTHENTICATION = "company.settings.form.authentication";
+
 	public static final String COMPANY_SETTINGS_FORM_CONFIGURATION = "company.settings.form.configuration";
 
 	public static final String COMPANY_SETTINGS_FORM_IDENTIFICATION = "company.settings.form.identification";
@@ -419,9 +423,9 @@ public interface PropsKeys {
 
 	public static final String CUSTOM_SQL_FUNCTION_ISNULL = "custom.sql.function.isnull";
 
-	public static final String DATABASE_MYSQL_ENGINE = "database.mysql.engine";
+	public static final String DATABASE_INDEXES_UPDATE_ON_STARTUP = "database.indexes.update.on.startup";
 
-	public static final String DEFAULT_ADMIN_EMAIL_ADDRESS = "default.admin.email.address";
+	public static final String DATABASE_MYSQL_ENGINE = "database.mysql.engine";
 
 	public static final String DEFAULT_ADMIN_EMAIL_ADDRESS_PREFIX = "default.admin.email.address.prefix";
 
@@ -531,7 +535,15 @@ public interface PropsKeys {
 
 	public static final String DL_FILE_ENTRY_DRAFTS_ENABLED = "dl.file.entry.drafts.enabled";
 
+	public static final String DL_FILE_ENTRY_PREVIEW_AUDIO = "dl.file.entry.preview.audio.";
+
+	public static final String DL_FILE_ENTRY_PREVIEW_AUDIO_BIT_RATE = "dl.file.entry.preview.audio.bit.rate";
+
+	public static final String DL_FILE_ENTRY_PREVIEW_AUDIO_CONTAINERS = "dl.file.entry.preview.audio.containers";
+
 	public static final String DL_FILE_ENTRY_PREVIEW_AUDIO_MIME_TYPES = "dl.file.entry.preview.audio.mime.types";
+
+	public static final String DL_FILE_ENTRY_PREVIEW_AUDIO_SAMPLE_RATE = "dl.file.entry.preview.audio.sample.rate";
 
 	public static final String DL_FILE_ENTRY_PREVIEW_DOCUMENT_DEPTH = "dl.file.entry.preview.document.depth";
 
@@ -610,6 +622,8 @@ public interface PropsKeys {
 	public static final String DL_REPOSITORY_CMIS_DELETE_DEPTH = "dl.repository.cmis.delete.depth";
 
 	public static final String DL_REPOSITORY_IMPL = "dl.repository.impl";
+
+	public static final String DL_SHOW_LIFERAY_SYNC_MESSAGE = "dl.show.liferay.sync.message";
 
 	public static final String DL_STORE_ANTIVIRUS_ENABLED = "dl.store.antivirus.enabled";
 
@@ -795,11 +809,15 @@ public interface PropsKeys {
 
 	public static final String IMAGEMAGICK_GLOBAL_SEARCH_PATH = "imagemagick.global.search.path";
 
+	public static final String IMAGEMAGICK_RESOURCE_LIMIT = "imagemagick.resource.limit.";
+
 	public static final String INDEX_DATE_FORMAT_PATTERN = "index.date.format.pattern";
 
 	public static final String INDEX_DUMP_COMPRESSION_ENABLED = "index.dump.compression.enabled";
 
 	public static final String INDEX_FILTER_SEARCH_LIMIT = "index.filter.search.limit";
+
+	public static final String INDEX_FORCE_GC_BEFORE_DELETE = "index.force.gc.before.delete";
 
 	public static final String INDEX_ON_STARTUP = "index.on.startup";
 
@@ -808,6 +826,8 @@ public interface PropsKeys {
 	public static final String INDEX_ON_UPGRADE = "index.on.upgrade";
 
 	public static final String INDEX_READ_ONLY = "index.read.only";
+
+	public static final String INDEX_SEARCH_ENGINE_ID = "index.search.engine.id";
 
 	public static final String INDEX_SEARCH_HIGHLIGHT_ENABLED = "index.search.highlight.enabled";
 
@@ -832,6 +852,8 @@ public interface PropsKeys {
 	public static final String INVITATION_EMAIL_MESSAGE_SUBJECT = "invitation.email.message.subject";
 
 	public static final String INVOKER_FILTER_CHAIN_SIZE = "invoker.filter.chain.cache.size";
+
+	public static final String JAVADOC_MANAGER_ENABLED = "javadoc.manager.enabled";
 
 	public static final String JAVASCRIPT_BAREBONE_ENABLED = "javascript.barebone.enabled";
 
@@ -889,6 +911,8 @@ public interface PropsKeys {
 
 	public static final String JOURNAL_ARTICLE_CUSTOM_TOKENS = "journal.article.custom.tokens";
 
+	public static final String JOURNAL_ARTICLE_EXPIRE_ALL_VERSIONS = "journal.article.expire.all.versions";
+
 	public static final String JOURNAL_ARTICLE_FORCE_AUTOGENERATE_ID = "journal.article.force.autogenerate.id";
 
 	public static final String JOURNAL_ARTICLE_FORM_ADD = "journal.article.form.add";
@@ -900,6 +924,8 @@ public interface PropsKeys {
 	public static final String JOURNAL_ARTICLE_TOKEN_PAGE_BREAK = "journal.article.token.page.break";
 
 	public static final String JOURNAL_ARTICLE_TYPES = "journal.article.types";
+
+	public static final String JOURNAL_ARTICLE_URL_TITLE_REGEXP = "journal.article.url.title.regexp";
 
 	public static final String JOURNAL_ARTICLE_VIEW_PERMISSION_CHECK_ENABLED = "journal.article.view.permission.check.enabled";
 
@@ -995,11 +1021,17 @@ public interface PropsKeys {
 
 	public static final String JPA_PROVIDER_PROPERTY_PREFIX = "jpa.provider.property.";
 
+	public static final String JSON_DESERIALIZER_STRICT_MODE = "json.deserializer.strict.mode";
+
 	public static final String JSON_SERVICE_INVALID_CLASS_NAMES = "json.service.invalid.class.names";
+
+	public static final String JSON_SERVICE_PUBLIC_METHODS = "json.service.public.methods";
 
 	public static final String JSON_WEB_SERVICE_ENABLED = "json.web.service.enabled";
 
 	public static final String JSONWS_WEB_SERVICE_INVALID_HTTP_METHODS = "jsonws.web.service.invalid.http.methods";
+
+	public static final String JSONWS_WEB_SERVICE_PUBLIC_METHODS = "jsonws.web.service.public.methods";
 
 	public static final String JSONWS_WEB_SERVICE_STRICT_HTTP_METHOD = "jsonws.web.service.strict.http.method";
 
@@ -1221,11 +1253,17 @@ public interface PropsKeys {
 
 	public static final String LOGIN_EVENTS_PRE = "login.events.pre";
 
+	public static final String LOGIN_FORM_NAVIGATION_POST = "login.form.navigation.post";
+
+	public static final String LOGIN_FORM_NAVIGATION_PRE = "login.form.navigation.pre";
+
 	public static final String LOGOUT_EVENTS_POST = "logout.events.post";
 
 	public static final String LOGOUT_EVENTS_PRE = "logout.events.pre";
 
 	public static final String LOOK_AND_FEEL_MODIFIABLE = "look.and.feel.modifiable";
+
+	public static final String LUCENE_ANALYZER_MAX_TOKENS = "lucene.analyzer.max.tokens";
 
 	public static final String LUCENE_BUFFER_SIZE = "lucene.buffer.size";
 
@@ -1241,21 +1279,17 @@ public interface PropsKeys {
 
 	public static final String LUCENE_MERGE_FACTOR = "lucene.merge.factor";
 
-	public static final String LUCENE_OPTIMIZE_INTERVAL = "lucene.optimize.interval";
+	public static final String LUCENE_MERGE_POLICY = "lucene.merge.policy";
 
 	public static final String LUCENE_REPLICATE_WRITE = "lucene.replicate.write";
-
-	public static final String LUCENE_STORE_JDBC_AUTO_CLEAN_UP_ENABLED = "lucene.store.jdbc.auto.clean.up.enabled";
-
-	public static final String LUCENE_STORE_JDBC_AUTO_CLEAN_UP_INTERVAL = "lucene.store.jdbc.auto.clean.up.interval";
-
-	public static final String LUCENE_STORE_JDBC_DIALECT = "lucene.store.jdbc.dialect.";
 
 	public static final String LUCENE_STORE_TYPE = "lucene.store.type";
 
 	public static final String LUCENE_STORE_TYPE_FILE_FORCE_MMAP = "lucene.store.type.file.force.mmap";
 
 	public static final String MAIL_AUDIT_TRAIL = "mail.audit.trail";
+
+	public static final String MAIL_BATCH_SIZE = "mail.batch.size";
 
 	public static final String MAIL_HOOK_CYRUS_ADD_USER = "mail.hook.cyrus.add.user";
 
@@ -1324,6 +1358,8 @@ public interface PropsKeys {
 	public static final String MESSAGE_BOARDS_CATEGORY_DISPLAY_STYLES = "message.boards.category.display.styles";
 
 	public static final String MESSAGE_BOARDS_CATEGORY_DISPLAY_STYLES_DEFAULT = "message.boards.category.display.styles.default";
+
+	public static final String MESSAGE_BOARDS_EMAIL_BULK_ADDRESS = "message.boards.email.bulk.address";
 
 	public static final String MESSAGE_BOARDS_EMAIL_FROM_ADDRESS = "message.boards.email.from.address";
 
@@ -1475,8 +1511,6 @@ public interface PropsKeys {
 
 	public static final String OPENOFFICE_SERVER_PORT = "openoffice.server.port";
 
-	public static final String ORGANIZATIONS_ASSIGNMENT_AUTO = "organizations.assignment.auto";
-
 	public static final String ORGANIZATIONS_ASSIGNMENT_STRICT = "organizations.assignment.strict";
 
 	public static final String ORGANIZATIONS_CHILDREN_TYPES = "organizations.children.types";
@@ -1521,7 +1555,51 @@ public interface PropsKeys {
 
 	public static final String OSGI_SYSTEM_PACKAGES_EXTRA = "osgi.system.packages.extra";
 
+	public static final String PASSWORDS_DEFAULT_POLICY_ALLOW_DICTIONARY_WORDS = "passwords.default.policy.allow.dictionary.words";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_CHANGE_REQUIRED = "passwords.default.policy.change.required";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_CHANGEABLE = "passwords.default.policy.changeable";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_CHECK_SYNTAX = "passwords.default.policy.check.syntax";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_EXPIREABLE = "passwords.default.policy.expireable";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_GRACE_LIMIT = "passwords.default.policy.grace.limit";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_HISTORY = "passwords.default.policy.history";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_HISTORY_COUNT = "passwords.default.policy.history.count";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_LOCKOUT = "passwords.default.policy.lockout";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_LOCKOUT_DURATION = "passwords.default.policy.lockout.duration";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_MAX_AGE = "passwords.default.policy.max.age";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_MAX_FAILURE = "passwords.default.policy.max.failure";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_MIN_AGE = "passwords.default.policy.min.age";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_MIN_ALPHANUMERIC = "passwords.default.policy.alphanumeric";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_MIN_LENGTH = "passwords.default.policy.min.length";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_MIN_LOWERCASE = "passwords.default.policy.min.lowercase";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_MIN_NUMBERS = "passwords.default.policy.min.numbers";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_MIN_SYMBOLS = "passwords.default.policy.min.symbols";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_MIN_UPPERCASE = "passwords.default.policy.min.uppercase";
+
 	public static final String PASSWORDS_DEFAULT_POLICY_NAME = "passwords.default.policy.name";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_RESET_FAILURE_COUNT = "passwords.default.policy.reset.failure.count";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_RESET_TICKET_MAX_AGE = "passwords.default.policy.reset.ticket.max.age";
+
+	public static final String PASSWORDS_DEFAULT_POLICY_WARNING_TIME = "passwords.default.policy.warning.time";
 
 	public static final String PASSWORDS_DIGEST_ENCODING = "passwords.digest.encoding";
 
@@ -1547,6 +1625,8 @@ public interface PropsKeys {
 
 	public static final String PASSWORDS_TOOLKIT = "passwords.toolkit";
 
+	public static final String PERMISSIONS_CHECK_GUEST_ENABLED = "permissions.check.guest.enabled";
+
 	public static final String PERMISSIONS_CHECKER = "permissions.checker";
 
 	public static final String PERMISSIONS_CUSTOM_ATTRIBUTE_READ_CHECK_BY_DEFAULT = "permissions.custom.attribute.read.check.by.default";
@@ -1554,8 +1634,6 @@ public interface PropsKeys {
 	public static final String PERMISSIONS_CUSTOM_ATTRIBUTE_WRITE_CHECK_BY_DEFAULT = "permissions.custom.attribute.write.check.by.default";
 
 	public static final String PERMISSIONS_INLINE_SQL_CHECK_ENABLED = "permissions.inline.sql.check.enabled";
-
-	public static final String PERMISSIONS_CHECK_GUEST_ENABLED = "permissions.check.guest.enabled";
 
 	public static final String PERMISSIONS_LIST_FILTER = "permissions.list.filter";
 
@@ -1622,6 +1700,8 @@ public interface PropsKeys {
 	public static final String PORTLET_ADD_DEFAULT_RESOURCE_CHECK_WHITELIST = "portlet.add.default.resource.check.whitelist";
 
 	public static final String PORTLET_ADD_DEFAULT_RESOURCE_CHECK_WHITELIST_ACTIONS = "portlet.add.default.resource.check.whitelist.actions";
+
+	public static final String PORTLET_CONTAINER_RESTRICT = "portlet.container.restrict";
 
 	public static final String PORTLET_CSS_ENABLED = "portlet.css.enabled";
 
@@ -1791,6 +1871,10 @@ public interface PropsKeys {
 
 	public static final String SETUP_DATABASE_DRIVER_CLASS_NAME = "setup.database.driverClassName";
 
+	public static final String SETUP_DATABASE_JAR_NAME = "setup.database.jar.name";
+
+	public static final String SETUP_DATABASE_JAR_URL = "setup.database.jar.url";
+
 	public static final String SETUP_DATABASE_TYPES = "setup.database.types";
 
 	public static final String SETUP_DATABASE_URL = "setup.database.url";
@@ -1872,6 +1956,10 @@ public interface PropsKeys {
 	public static final String SITES_FORM_UPDATE_MAIN = "sites.form.update.main";
 
 	public static final String SITES_FORM_UPDATE_SEO = "sites.form.update.seo";
+
+	public static final String SITES_SITEMAP_DEFAULT_CHANGE_FREQUENCY = "sites.sitemap.default.change.frequency";
+
+	public static final String SITES_SITEMAP_DEFAULT_PRIORITY = "sites.sitemap.default.priority";
 
 	public static final String SOCIAL_ACTIVITY_CONTRIBUTION_INCREMENTS = "social.activity.contribution.increments";
 
@@ -1986,6 +2074,8 @@ public interface PropsKeys {
 	public static final String TRANSLATIONS_DISABLED = "translations.disabled";
 
 	public static final String TRANSLATOR_DEFAULT_LANGUAGES = "translator.default.languages";
+
+	public static final String TRASH_SEARCH_LIMIT = "trash.search.limit";
 
 	public static final String UPGRADE_PROCESSES = "upgrade.processes";
 
@@ -2120,6 +2210,10 @@ public interface PropsKeys {
 	public static final String WEB_SERVER_PROXY_LEGACY_MODE = "web.server.proxy.legacy.mode";
 
 	public static final String WEB_SERVER_SERVLET_DIRECTORY_INDEXING_ENABLED = "web.server.servlet.directory.indexing.enabled";
+
+	public static final String WEB_SERVER_SERVLET_HTTP_STATUS_CODE_STRICT = "web.server.servlet.http.status.code.strict";
+
+	public static final String WEB_SERVER_SERVLET_VERSION_VERBOSITY = "web.server.servlet.version.verbosity";
 
 	public static final String WEBDAV_IGNORE = "webdav.ignore";
 

@@ -148,7 +148,7 @@ public class ServiceContext implements Cloneable, Serializable {
 				modelName);
 
 		for (String roleName : roleNames) {
-			for (String action: supportedActions) {
+			for (String action : supportedActions) {
 				if (roleName.equals(RoleConstants.GUEST) &&
 					!guestUnsupportedActions.contains(action) &&
 					guestDefaultActions.contains(action) &&
@@ -585,11 +585,11 @@ public class ServiceContext implements Cloneable, Serializable {
 	 * @see    com.liferay.portal.kernel.servlet.HttpHeaders
 	 */
 	public String getUserAgent() {
-		if (_headers == null) {
+		if (_request == null) {
 			return null;
 		}
 
-		return _headers.get(HttpHeaders.USER_AGENT);
+		return _request.getHeader(HttpHeaders.USER_AGENT);
 	}
 
 	/**

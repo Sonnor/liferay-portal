@@ -112,6 +112,9 @@ public class GroupImpl extends GroupBaseImpl {
 		if (isCompany()) {
 			name = LanguageUtil.get(locale, "global");
 		}
+		else if (isControlPanel()) {
+			name = LanguageUtil.get(locale, "control-panel");
+		}
 		else if (isLayout()) {
 			Layout layout = LayoutLocalServiceUtil.getLayout(getClassPK());
 
@@ -138,6 +141,12 @@ public class GroupImpl extends GroupBaseImpl {
 				OrganizationLocalServiceUtil.getOrganization(organizationId);
 
 			name = organization.getName();
+
+			Group group = organization.getGroup();
+
+			if (group.isStaged() && isStagingGroup()) {
+				name = name.concat(" (Staging)");
+			}
 		}
 		else if (isUser()) {
 			long userId = getClassPK();

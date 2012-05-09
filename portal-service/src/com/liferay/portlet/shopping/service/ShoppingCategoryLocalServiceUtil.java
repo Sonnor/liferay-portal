@@ -66,25 +66,32 @@ public class ShoppingCategoryLocalServiceUtil {
 	* Deletes the shopping category with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param categoryId the primary key of the shopping category
+	* @return the shopping category that was removed
 	* @throws PortalException if a shopping category with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteShoppingCategory(long categoryId)
+	public static com.liferay.portlet.shopping.model.ShoppingCategory deleteShoppingCategory(
+		long categoryId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteShoppingCategory(categoryId);
+		return getService().deleteShoppingCategory(categoryId);
 	}
 
 	/**
 	* Deletes the shopping category from the database. Also notifies the appropriate model listeners.
 	*
 	* @param shoppingCategory the shopping category
+	* @return the shopping category that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteShoppingCategory(
+	public static com.liferay.portlet.shopping.model.ShoppingCategory deleteShoppingCategory(
 		com.liferay.portlet.shopping.model.ShoppingCategory shoppingCategory)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteShoppingCategory(shoppingCategory);
+		return getService().deleteShoppingCategory(shoppingCategory);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -402,14 +409,10 @@ public class ShoppingCategoryLocalServiceUtil {
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(ShoppingCategoryLocalService service) {
-		MethodCache.remove(ShoppingCategoryLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(ShoppingCategoryLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(ShoppingCategoryLocalService.class);
 	}
 
 	private static ShoppingCategoryLocalService _service;

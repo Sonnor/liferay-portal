@@ -50,7 +50,7 @@ import com.liferay.portal.kernel.sanitizer.SanitizerWrapper;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerPostProcessor;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
-import com.liferay.portal.kernel.servlet.DirectServletRegistry;
+import com.liferay.portal.kernel.servlet.DirectServletRegistryUtil;
 import com.liferay.portal.kernel.servlet.LiferayFilter;
 import com.liferay.portal.kernel.servlet.LiferayFilterTracker;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
@@ -148,7 +148,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -181,6 +180,7 @@ public class HookHotDeployListener
 		"auth.max.failures", "auth.token.impl", "auth.pipeline.post",
 		"auth.pipeline.pre", "auto.login.hooks",
 		"captcha.check.portal.create_account", "captcha.engine.impl",
+		"company.settings.form.authentication",
 		"company.settings.form.configuration",
 		"company.settings.form.identification",
 		"company.settings.form.miscellaneous",
@@ -204,7 +204,8 @@ public class HookHotDeployListener
 		"layout.user.public.layouts.power.user.required",
 		"ldap.attrs.transformer.impl", "locales.beta",
 		"login.create.account.allow.custom.password", "login.events.post",
-		"login.events.pre", "logout.events.post", "logout.events.pre",
+		"login.events.pre", "login.form.navigation.post",
+		"login.form.navigation.pre", "logout.events.post", "logout.events.pre",
 		"mail.hook.impl", "my.sites.show.private.sites.with.no.layouts",
 		"my.sites.show.public.sites.with.no.layouts",
 		"my.sites.show.user.private.sites.with.no.layouts",
@@ -512,7 +513,10 @@ public class HookHotDeployListener
 			return;
 		}
 
-		logRegistration(servletContextName);
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Registering extension environment for " + servletContextName);
+		}
 
 		_servletContextNames.add(servletContextName);
 
@@ -680,21 +684,17 @@ public class HookHotDeployListener
 					customJspDir, customJspGlobal, customJsps);
 
 				if (_log.isDebugEnabled()) {
-					StringBundler sb = new StringBundler(customJsps.size() * 2);
+					StringBundler sb = new StringBundler(
+						customJsps.size() * 2 + 1);
 
 					sb.append("Custom JSP files:\n");
 
-					Iterator<String> itr = customJsps.iterator();
-
-					while (itr.hasNext()) {
-						String customJsp = itr.next();
-
+					for (String customJsp : customJsps) {
 						sb.append(customJsp);
-
-						if (itr.hasNext()) {
-							sb.append(StringPool.NEW_LINE);
-						}
+						sb.append(StringPool.NEW_LINE);
 					}
+
+					sb.setIndex(sb.index() - 1);
 
 					_log.debug(sb.toString());
 				}
@@ -953,7 +953,7 @@ public class HookHotDeployListener
 
 		registerClpMessageListeners(servletContext, portletClassLoader);
 
-		DirectServletRegistry.clearServlets();
+		DirectServletRegistryUtil.clearServlets();
 		FileAvailabilityUtil.reset();
 
 		if (_log.isInfoEnabled()) {
@@ -1326,8 +1326,7 @@ public class HookHotDeployListener
 		for (String customJsp : customJsps) {
 			int pos = customJsp.indexOf(customJspDir);
 
-			String portalJsp = customJsp.substring(
-				pos + customJspDir.length(), customJsp.length());
+			String portalJsp = customJsp.substring(pos + customJspDir.length());
 
 			if (customJspGlobal) {
 				File portalJspFile = new File(portalWebDir + portalJsp);
@@ -1551,7 +1550,7 @@ public class HookHotDeployListener
 		}
 
 		for (String key : _PROPS_VALUES_OBSOLETE) {
-			if (_log.isInfoEnabled()) {
+			if (_log.isInfoEnabled() && portalProperties.contains(key)) {
 				_log.info("Portal property \"" + key + "\" is obsolete");
 			}
 		}
@@ -1919,12 +1918,6 @@ public class HookHotDeployListener
 		}
 	}
 
-	protected void logRegistration(String servletContextName) {
-		if (_log.isInfoEnabled()) {
-			_log.info("Registering hook for " + servletContextName);
-		}
-	}
-
 	protected void resetPortalProperties(
 			String servletContextName, Properties portalProperties,
 			boolean initPhase)
@@ -2232,6 +2225,7 @@ public class HookHotDeployListener
 	private static final String[] _PROPS_VALUES_MERGE_STRING_ARRAY = {
 		"admin.default.group.names", "admin.default.role.names",
 		"admin.default.user.group.names", "asset.publisher.display.styles",
+		"company.settings.form.authentication",
 		"company.settings.form.configuration",
 		"company.settings.form.identification",
 		"company.settings.form.miscellaneous", "convert.processes",
@@ -2239,6 +2233,7 @@ public class HookHotDeployListener
 		"journal.article.form.translate", "journal.article.form.update",
 		"layout.form.add", "layout.form.update", "layout.set.form.update",
 		"layout.static.portlets.all", "layout.types",
+		"login.form.navigation.post", "login.form.navigation.pre",
 		"organizations.form.add.identification", "organizations.form.add.main",
 		"organizations.form.add.miscellaneous",
 		"portlet.add.default.resource.check.whitelist",

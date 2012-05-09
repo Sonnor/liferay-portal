@@ -36,6 +36,7 @@ import com.liferay.portal.model.Address;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.CompanyConstants;
 import com.liferay.portal.model.Contact;
+import com.liferay.portal.model.EmailAddress;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Organization;
 import com.liferay.portal.model.PasswordPolicy;
@@ -52,6 +53,7 @@ import com.liferay.portal.security.auth.FullNameGeneratorFactory;
 import com.liferay.portal.service.AddressLocalServiceUtil;
 import com.liferay.portal.service.CompanyLocalServiceUtil;
 import com.liferay.portal.service.ContactLocalServiceUtil;
+import com.liferay.portal.service.EmailAddressLocalServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.GroupServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
@@ -192,6 +194,11 @@ public class UserImpl extends UserBaseImpl {
 			themeDisplay.getPortalURL(), themeDisplay.getPathMain());
 	}
 
+	public List<EmailAddress> getEmailAddresses() throws SystemException {
+		return EmailAddressLocalServiceUtil.getEmailAddresses(
+			getCompanyId(), Contact.class.getName(), getContactId());
+	}
+
 	public boolean getFemale() throws PortalException, SystemException {
 		return !getMale();
 	}
@@ -315,7 +322,13 @@ public class UserImpl extends UserBaseImpl {
 	}
 
 	public long[] getOrganizationIds() throws PortalException, SystemException {
-		List<Organization> organizations = getOrganizations();
+		return getOrganizationIds(false);
+	}
+
+	public long[] getOrganizationIds(boolean includeNonUser)
+		throws PortalException, SystemException {
+
+		List<Organization> organizations = getOrganizations(includeNonUser);
 
 		long[] organizationIds = new long[organizations.size()];
 
@@ -331,7 +344,15 @@ public class UserImpl extends UserBaseImpl {
 	public List<Organization> getOrganizations()
 		throws PortalException, SystemException {
 
-		return OrganizationLocalServiceUtil.getUserOrganizations(getUserId());
+		return getOrganizations(false);
+	}
+
+	public List<Organization> getOrganizations(
+			boolean includeIndirectlyAssociated)
+		throws PortalException, SystemException {
+
+		return OrganizationLocalServiceUtil.getUserOrganizations(
+			getUserId(), includeIndirectlyAssociated);
 	}
 
 	public boolean getPasswordModified() {

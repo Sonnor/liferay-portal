@@ -146,7 +146,15 @@
 		<priority value="INFO" />
 	</category>
 
+	<category name="com.liferay.portal.deploy.hot.HotDeployImpl">
+		<priority value="INFO" />
+	</category>
+
 	<category name="com.liferay.portal.deploy.hot.PluginPackageHotDeployListener">
+		<priority value="ERROR" />
+	</category>
+
+	<category name="com.liferay.portal.deploy.hot.PortletHotDeployListener">
 		<priority value="ERROR" />
 	</category>
 
@@ -278,6 +286,10 @@
 		<priority value="INFO" />
 	</category>
 
+	<category name="com.liferay.portal.kernel.portlet">
+		<priority value="INFO" />
+	</category>
+
 	<category name="com.liferay.portal.kernel.search.HitsOpenSearchImpl">
 		<priority value="WARN" />
 	</category>
@@ -286,8 +298,12 @@
 		<priority value="ERROR" />
 	</category>
 
-	<category name="com.liferay.portal.kernel.servlet.PortletContextListener">
-		<priority value="INFO" />
+	<category name="com.liferay.portal.kernel.servlet.PluginContextListener">
+		<priority value="WARN" />
+	</category>
+
+	<category name="com.liferay.portal.kernel.servlet.SecurePluginContextListener">
+		<priority value="ERROR" />
 	</category>
 
 	<category name="com.liferay.portal.kernel.servlet.ServletContextPool">
@@ -306,12 +322,20 @@
 		<priority value="ERROR" />
 	</category>
 
+	<category name="com.liferay.portal.kernel.util.ReferenceRegistry">
+		<priority value="WARN" />
+	</category>
+
 	<category name="com.liferay.portal.kernel.util.ServerDetector">
 		<priority value="INFO" />
 	</category>
 
 	<category name="com.liferay.portal.lar">
 		<priority value="ERROR" />
+	</category>
+
+	<category name="com.liferay.portal.license">
+		<priority value="INFO" />
 	</category>
 
 	<category name="com.liferay.portal.model.Image">
@@ -340,6 +364,10 @@
 
 	<category name="com.liferay.portal.scheduler.quartz.PortalJobStore">
 		<priority value="ERROR" />
+	</category>
+
+	<category name="com.liferay.portal.search.IndexerRegistryImpl">
+		<priority value="WARN" />
 	</category>
 
 	<category name="com.liferay.portal.search.lucene">
@@ -860,6 +888,10 @@
 
 	<category name="com.liferay.portlet.wiki.importers">
 		<priority value="WARN" />
+	</category>
+
+	<category name="com.liferay.resourcesimporter">
+		<priority value="INFO" />
 	</category>
 
 	<category name="com.liferay.samplestruts">

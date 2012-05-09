@@ -36,6 +36,7 @@ import com.liferay.portal.service.permission.GroupPermissionUtil;
 import com.liferay.portal.service.permission.PortalPermissionUtil;
 import com.liferay.portal.service.permission.PortletPermissionUtil;
 import com.liferay.portal.service.permission.RolePermissionUtil;
+import com.liferay.portal.service.permission.UserPermissionUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.util.UniqueList;
 
@@ -243,6 +244,15 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			userPersistence.getGroups(permissionChecker.getUserId(), 0, max));
 		groups.addAll(
 			getUserOrganizationsGroups(permissionChecker.getUserId(), 0, max));
+
+		List<UserGroup> userGroups = userPersistence.getUserGroups(
+			permissionChecker.getUserId(), 0, max);
+
+		for (UserGroup userGroup : userGroups) {
+			groups.addAll(
+				userGroupPersistence.getGroups(
+					userGroup.getUserGroupId(), 0, max));
+		}
 
 		Iterator<Group> itr = groups.iterator();
 
@@ -536,7 +546,16 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	 * @throws SystemException if a system exception occurred
 	 */
 	public boolean hasUserGroup(long userId, long groupId)
-		throws SystemException {
+		throws PortalException, SystemException {
+
+		try {
+			UserPermissionUtil.check(
+				getPermissionChecker(), userId, ActionKeys.VIEW);
+		}
+		catch (PrincipalException e) {
+			GroupPermissionUtil.check(
+				getPermissionChecker(), groupId, ActionKeys.VIEW_MEMBERS);
+		}
 
 		return groupLocalService.hasUserGroup(userId, groupId);
 	}
@@ -631,7 +650,7 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 		throws PortalException, SystemException {
 
 		RolePermissionUtil.check(
-			getPermissionChecker(), roleId, ActionKeys.UPDATE);
+			getPermissionChecker(), roleId, ActionKeys.ASSIGN_MEMBERS);
 
 		groupLocalService.setRoleGroups(roleId, groupIds);
 	}
@@ -649,7 +668,7 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 		throws PortalException, SystemException {
 
 		RolePermissionUtil.check(
-			getPermissionChecker(), roleId, ActionKeys.UPDATE);
+			getPermissionChecker(), roleId, ActionKeys.ASSIGN_MEMBERS);
 
 		groupLocalService.unsetRoleGroups(roleId, groupIds);
 	}

@@ -16,23 +16,20 @@ package com.liferay.taglib.portletext;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.PortletContainerUtil;
+import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
-import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.Layout;
+import com.liferay.portal.model.Portlet;
+import com.liferay.portal.service.PortletLocalServiceUtil;
+import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
-import com.liferay.portlet.layoutconfiguration.util.RuntimePortletUtil;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
@@ -46,56 +43,29 @@ public class RuntimeTag extends TagSupport {
 
 	public static void doTag(
 			String portletName, PageContext pageContext,
-			ServletContext servletContext, HttpServletRequest request,
-			HttpServletResponse response)
+			HttpServletRequest request, HttpServletResponse response)
 		throws Exception {
 
-		doTag(
-			portletName, null, pageContext, servletContext, request, response);
+		doTag(portletName, null, pageContext, request, response);
 	}
 
 	public static void doTag(
 			String portletName, String queryString, PageContext pageContext,
-			ServletContext servletContext, HttpServletRequest request,
-			HttpServletResponse response)
+			HttpServletRequest request, HttpServletResponse response)
 		throws Exception {
 
-		doTag(
-			portletName, queryString, null, pageContext, servletContext,
-			request, response);
+		doTag(portletName, queryString, null, pageContext, request, response);
 	}
 
 	public static void doTag(
 			String portletName, String queryString, String defaultPreferences,
-			PageContext pageContext, ServletContext servletContext,
-			HttpServletRequest request, HttpServletResponse response)
+			PageContext pageContext, HttpServletRequest request,
+			HttpServletResponse response)
 		throws Exception {
 
 		if (pageContext != null) {
 			response = new PipingServletResponse(
 				response, pageContext.getOut());
-		}
-
-		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_REQUEST);
-
-		RenderRequest renderRequest = null;
-
-		if ((portletRequest != null) &&
-			(portletRequest instanceof RenderRequest)) {
-
-			renderRequest = (RenderRequest)portletRequest;
-		}
-
-		PortletResponse portletResponse = (PortletResponse)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_RESPONSE);
-
-		RenderResponse renderResponse = null;
-
-		if ((portletResponse != null) &&
-			(portletResponse instanceof RenderResponse)) {
-
-			renderResponse = (RenderResponse)portletResponse;
 		}
 
 		String portletId = portletName;
@@ -108,9 +78,16 @@ public class RuntimeTag extends TagSupport {
 					request, portletId, defaultPreferences);
 			}
 
-			RuntimePortletUtil.processPortlet(
-				servletContext, request, response, renderRequest,
-				renderResponse, portletId, queryString, true);
+			request = DynamicServletRequest.addQueryString(
+				request, queryString);
+
+			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+			Portlet portlet = PortletLocalServiceUtil.getPortletById(
+				themeDisplay.getCompanyId(), portletId);
+
+			PortletContainerUtil.render(request, response, portlet);
 
 			Set<String> runtimePortletIds = (Set<String>)request.getAttribute(
 				WebKeys.RUNTIME_PORTLET_IDS);
@@ -141,15 +118,12 @@ public class RuntimeTag extends TagSupport {
 				return EVAL_PAGE;
 			}
 
-			ServletContext servletContext =
-				(ServletContext)request.getAttribute(WebKeys.CTX);
-
 			HttpServletResponse response =
 				(HttpServletResponse)pageContext.getResponse();
 
 			doTag(
 				_portletName, _queryString, _defaultPreferences, pageContext,
-				servletContext, request, response);
+				request, response);
 
 			return EVAL_PAGE;
 		}

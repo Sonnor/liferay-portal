@@ -18,13 +18,6 @@
 
 <%
 Folder folder = (Folder)request.getAttribute("view.jsp-folder");
-
-long folderId = GetterUtil.getLong((String)request.getAttribute("view.jsp-folderId"));
-
-long repositoryId = GetterUtil.getLong((String)request.getAttribute("view.jsp-repositoryId"));
-
-String orderByCol = ParamUtil.getString(request, "orderByCol");
-String orderByType = ParamUtil.getString(request, "orderByType");
 %>
 
 <c:if test="<%= !user.isDefaultUser() %>">
@@ -40,54 +33,75 @@ String orderByType = ParamUtil.getString(request, "orderByType");
 	<c:if test="<%= !scopeGroup.isStaged() || scopeGroup.isStagingGroup() || !scopeGroup.isStagedPortlet(PortletKeys.DOCUMENT_LIBRARY) %>">
 
 		<%
-		String taglibUrl = "javascript:" + renderResponse.getNamespace() + "editFileEntry('" + Constants.CANCEL_CHECKOUT + "')";
+		String taglibOnClick = "Liferay.fire('" + renderResponse.getNamespace() + "editFileEntry', {action: '" + Constants.CANCEL_CHECKOUT + "'});";
 		%>
 
 		<liferay-ui:icon
 			image="undo"
 			message="cancel-checkout[document]"
-			url="<%= taglibUrl %>"
+			onClick="<%= taglibOnClick %>"
+			url="javascript:;"
 		/>
 
 		<%
-		taglibUrl = "javascript:" + renderResponse.getNamespace() + "editFileEntry('" + Constants.CHECKIN + "')";
+		taglibOnClick = "Liferay.fire('" + renderResponse.getNamespace() + "editFileEntry', {action: '" + Constants.CHECKIN + "'});";
 		%>
 
 		<liferay-ui:icon
 			image="unlock"
 			message="checkin"
-			url="<%= taglibUrl %>"
+			onClick="<%= taglibOnClick %>"
+			url="javascript:;"
 		/>
 
 		<%
-		taglibUrl = "javascript:" + renderResponse.getNamespace() + "editFileEntry('" + Constants.CHECKOUT + "')";
+		taglibOnClick = "Liferay.fire('" + renderResponse.getNamespace() + "editFileEntry', {action: '" + Constants.CHECKOUT + "'});";
 		%>
 
 		<liferay-ui:icon
 			image="lock"
 			message="checkout[document]"
-			url="<%= taglibUrl %>"
+			onClick="<%= taglibOnClick %>"
+			url="javascript:;"
 		/>
 
 		<%
-		taglibUrl = "javascript:" + renderResponse.getNamespace() + "editFileEntry('" + Constants.MOVE + "')";
+		taglibOnClick = "Liferay.fire('" + renderResponse.getNamespace() + "editFileEntry', {action: '" + Constants.MOVE + "'});";
 		%>
 
 		<liferay-ui:icon
 			image="submit"
 			message="move"
-			url="<%= taglibUrl %>"
+			onClick="<%= taglibOnClick %>"
+			url="javascript:;"
 		/>
 	</c:if>
 
-	<%
-	String taglibUrl = "javascript:" + renderResponse.getNamespace() + "editFileEntry('" + Constants.DELETE + "')";
-	%>
+	<c:choose>
+		<c:when test="<%= (folder == null) || (folder.getModel() instanceof DLFolder) %>">
 
-	<liferay-ui:icon-delete
-		confirmation="are-you-sure-you-want-to-delete-the-selected-entries"
-		url="<%= taglibUrl %>"
-	/>
+			<%
+			String taglibUrl = "Liferay.fire('" + renderResponse.getNamespace() + "editFileEntry', {action: '" + Constants.MOVE_TO_TRASH + "'});";
+			%>
+
+			<liferay-ui:icon-delete
+				confirmation="are-you-sure-you-want-to-move-the-selected-entries-to-the-recycle-bin"
+				trash="<%= true %>"
+				url="<%= taglibUrl %>"
+			/>
+		</c:when>
+		<c:otherwise>
+
+			<%
+			String taglibUrl = "Liferay.fire('" + renderResponse.getNamespace() + "editFileEntry', {action: '" + Constants.DELETE + "'});";
+			%>
+
+			<liferay-ui:icon-delete
+				confirmation="are-you-sure-you-want-to-delete-the-selected-entries"
+				url="<%= taglibUrl %>"
+			/>
+		</c:otherwise>
+	</c:choose>
 </liferay-ui:icon-menu>
 
 <span class="add-button" id="<portlet:namespace />addButtonContainer">
@@ -132,6 +146,7 @@ String orderByType = ParamUtil.getString(request, "orderByType");
 				dialog: {
 					width:820
 				},
+				id: '<portlet:namespace />openFileEntryTypeView',
 				title: '<%= UnicodeLanguageUtil.get(pageContext, "document-types") %>',
 				uri: '<liferay-portlet:renderURL windowState="<%= LiferayWindowState.POP_UP.toString() %>"><portlet:param name="struts_action" value="/document_library/view_file_entry_type" /><portlet:param name="redirect" value="<%= currentURL %>" /></liferay-portlet:renderURL>'
 			}

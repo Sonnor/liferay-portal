@@ -207,7 +207,7 @@ String signature = ParamUtil.getString(request, "signature");
 
 			<div class="aui-helper-hidden lfr-api-results" id="serviceResults">
 				<liferay-ui:tabs
-					names="result,javascript-example,curl-example"
+					names="result,javascript-example,curl-example,url-example"
 					refresh="<%= false %>"
 				>
 					<liferay-ui:section>
@@ -218,6 +218,9 @@ String signature = ParamUtil.getString(request, "signature");
 					</liferay-ui:section>
 					<liferay-ui:section>
 						<pre class="lfr-code-block" id="curlExample"></pre>
+					</liferay-ui:section>
+					<liferay-ui:section>
+						<pre class="lfr-code-block" id="urlExample"></pre>
 					</liferay-ui:section>
 				</liferay-ui:tabs>
 			</div>
@@ -230,7 +233,7 @@ String signature = ParamUtil.getString(request, "signature");
 				};
 			</aui:script>
 
-			<aui:form action='<%= jsonWebServiceActionMapping.getServletContextPath() + "/api/secure/jsonws" + jsonWebServiceActionMapping.getPath() %>' enctype="<%= enctype %>" name="execute" method="<%= jsonWebServiceActionMapping.getMethod() %>">
+			<aui:form action='<%= jsonWebServiceActionMapping.getServletContextPath() + "/api/secure/jsonws" + jsonWebServiceActionMapping.getPath() %>' enctype="<%= enctype %>" method="<%= jsonWebServiceActionMapping.getMethod() %>" name="execute">
 
 				<%
 				for (int i = 0; i < methodParameters.length; i++) {
@@ -311,6 +314,16 @@ String signature = ParamUtil.getString(request, "signature");
 			</aui:form>
 		</div>
 
+		<%
+		String servletContextPath = jsonWebServiceActionMapping.getServletContextPath();
+
+		String jsServicePath = servletContextPath + jsonWebServiceActionMapping.getPath();
+
+		if (Validator.isNotNull(servletContextPath)) {
+			jsServicePath = StringUtil.replace(jsServicePath, servletContextPath + StringPool.FORWARD_SLASH, servletContextPath + StringPool.POUND);
+		}
+		%>
+
 		<aui:script use="aui-io,aui-template,querystring-parse">
 			var REGEX_QUERY_STRING = new RegExp('([^?=&]+)(?:=([^&]*))?', 'g');
 
@@ -318,9 +331,36 @@ String signature = ParamUtil.getString(request, "signature");
 
 			var curlTpl = A.Template.from('#curlTpl');
 			var scriptTpl = A.Template.from('#scriptTpl');
+			var urlTpl = A.Template.from('#urlTpl');
+
+			var tplDataTypes = Liferay.TPL_DATA_TYPES;
+
+			var stringType = tplDataTypes.string;
+			var arrayType = tplDataTypes.array;
+
+			var formatDataType = function(key, value) {
+				value = decodeURIComponent(value.replace(/\+/g, ' '));
+
+				if (stringType[key]) {
+					value = '\'' + value + '\'';
+				}
+				else if (arrayType[key]) {
+					value = '[' + value + ']';
+				}
+
+				return value;
+			};
+
+			curlTpl.formatDataType = formatDataType;
+			scriptTpl.formatDataType = formatDataType;
+
+			urlTpl.toURIParam = function(value) {
+				return A.Lang.String.uncamelize(value, '-').toLowerCase();
+			};
 
 			var curlExample = A.one('#curlExample');
 			var jsExample = A.one('#jsExample');
+			var urlExample = A.one('#urlExample');
 
 			var serviceOutput = A.one('#serviceOutput');
 			var serviceResults = A.one('#serviceResults');
@@ -330,14 +370,14 @@ String signature = ParamUtil.getString(request, "signature");
 				function(event) {
 					event.halt();
 
-					var output = A.all([curlExample, jsExample, serviceOutput]);
+					var output = A.all([curlExample, jsExample, urlExample, serviceOutput]);
 
 					output.empty().addClass('loading-results');
 
 					var formEl = form.getDOM();
 
 					Liferay.Service(
-						'<%= jsonWebServiceActionMapping.getServletContextPath() + jsonWebServiceActionMapping.getPath() %>',
+						'<%= jsServicePath %>',
 						formEl,
 						function(obj) {
 							serviceOutput.html(A.JSON.stringify(obj, null, 2));
@@ -352,24 +392,14 @@ String signature = ParamUtil.getString(request, "signature");
 
 					var data = [];
 
-					var tplDataTypes = Liferay.TPL_DATA_TYPES;
-
-					var stringType = tplDataTypes.string;
-					var arrayType = tplDataTypes.array;
+					var ignoreFields = {
+						formDate: true
+					};
 
 					formQueryString.replace(
 						REGEX_QUERY_STRING,
 						function(match, key, value) {
-							if (value) {
-								value = decodeURIComponent(value.replace(/\+/g, ' '));
-
-								if (stringType[key]) {
-									value = '\'' + value + '\'';
-								}
-								else if (arrayType[key]) {
-									value = '[' + value + ']';
-								}
-
+							if (value && !ignoreFields[key]) {
 								data.push(
 									{
 										key: key,
@@ -386,6 +416,7 @@ String signature = ParamUtil.getString(request, "signature");
 
 					curlTpl.render(tplData, curlExample);
 					scriptTpl.render(tplData, jsExample);
+					urlTpl.render(tplData, urlExample);
 
 					serviceResults.show();
 				}
@@ -394,9 +425,9 @@ String signature = ParamUtil.getString(request, "signature");
 
 <textarea class="aui-helper-hidden" id="scriptTpl">
 Liferay.Service(
-  '<%= jsonWebServiceActionMapping.getServletContextPath() + jsonWebServiceActionMapping.getPath() %>',
-  <tpl if="data.length">data: {
-<%= StringPool.FOUR_SPACES %><tpl for="data">{key}: {value}<tpl if="!$last">,
+  '<%= jsServicePath %>',
+  <tpl if="data.length">{
+<%= StringPool.FOUR_SPACES %><tpl for="data">{key}: {[this.formatDataType(values.key, values.value)]}<tpl if="!$last">,
 <%= StringPool.FOUR_SPACES %></tpl></tpl>
   },
   </tpl>function(obj) {
@@ -406,10 +437,14 @@ Liferay.Service(
 </textarea>
 
 <textarea class="aui-helper-hidden" id="curlTpl">
-curl <%= themeDisplay.getPortalURL() + themeDisplay.getPathContext() %>/api/secure/jsonws<%= jsonWebServiceActionMapping.getServletContextPath() + jsonWebServiceActionMapping.getPath() %> \\
+curl <%= themeDisplay.getPortalURL() + themeDisplay.getPathContext() + jsonWebServiceActionMapping.getServletContextPath() %>/api/secure/jsonws<%= jsonWebServiceActionMapping.getPath() %> \\
   -u test@liferay.com:test <tpl if="data.length">\\
-  <tpl for="data">-d {key}={value} <tpl if="!$last">\\
+  <tpl for="data">-d {key}={[this.formatDataType(values.key, values.value)]} <tpl if="!$last">\\
   </tpl></tpl></tpl>
+</textarea>
+
+<textarea class="aui-helper-hidden" id="urlTpl">
+<%= themeDisplay.getPortalURL() + themeDisplay.getPathContext() + jsonWebServiceActionMapping.getServletContextPath() %>/api/secure/jsonws<%= jsonWebServiceActionMapping.getPath() %><tpl if="data.length">/<tpl for="data">{key:this.toURIParam}/{value}<tpl if="!$last">/</tpl></tpl></tpl>
 </textarea>
 	</c:when>
 	<c:otherwise>

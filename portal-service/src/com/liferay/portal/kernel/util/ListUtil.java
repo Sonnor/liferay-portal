@@ -96,7 +96,7 @@ public class ListUtil {
 
 	@SuppressWarnings("rawtypes")
 	public static <E> List<E> fromCollection(Collection<E> c) {
-		if ((c != null) && (List.class.isAssignableFrom(c.getClass()))) {
+		if ((c != null) && List.class.isAssignableFrom(c.getClass())) {
 			return (List)c;
 		}
 
@@ -180,6 +180,9 @@ public class ListUtil {
 		return fromArray(StringUtil.splitLines(s));
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public static <E> boolean remove(List<E> list, E element) {
 		Iterator<E> itr = list.iterator();
 

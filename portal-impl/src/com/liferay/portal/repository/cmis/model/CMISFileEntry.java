@@ -102,9 +102,7 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 		return contentStream.getStream();
 	}
 
-	public InputStream getContentStream(String version)
-		throws PortalException {
-
+	public InputStream getContentStream(String version) throws PortalException {
 		if (Validator.isNull(version)) {
 			return getContentStream();
 		}
@@ -424,7 +422,7 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 			return false;
 		}
 
- 		AllowableActions allowableActions = _document.getAllowableActions();
+		AllowableActions allowableActions = _document.getAllowableActions();
 
 		Set<Action> allowableActionsSet =
 			allowableActions.getAllowableActions();

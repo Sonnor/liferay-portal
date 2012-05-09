@@ -40,7 +40,6 @@ import com.liferay.portal.service.persistence.BatchSessionUtil;
 import com.liferay.portal.service.persistence.GroupPersistence;
 import com.liferay.portal.service.persistence.LayoutPersistence;
 import com.liferay.portal.service.persistence.PortletPreferencesPersistence;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -3679,15 +3678,16 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 	 * @param layoutId the layout ID
 	 * @param portletId the portlet ID
 	 * @param articleId the article ID
+	 * @return the journal content search that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByG_P_L_P_A(long groupId, boolean privateLayout,
-		long layoutId, String portletId, String articleId)
+	public JournalContentSearch removeByG_P_L_P_A(long groupId,
+		boolean privateLayout, long layoutId, String portletId, String articleId)
 		throws NoSuchContentSearchException, SystemException {
 		JournalContentSearch journalContentSearch = findByG_P_L_P_A(groupId,
 				privateLayout, layoutId, portletId, articleId);
 
-		remove(journalContentSearch);
+		return remove(journalContentSearch);
 	}
 
 	/**
@@ -4299,6 +4299,8 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 	protected JournalContentSearchPersistence journalContentSearchPersistence;
 	@BeanReference(type = JournalFeedPersistence.class)
 	protected JournalFeedPersistence journalFeedPersistence;
+	@BeanReference(type = JournalFolderPersistence.class)
+	protected JournalFolderPersistence journalFolderPersistence;
 	@BeanReference(type = JournalStructurePersistence.class)
 	protected JournalStructurePersistence journalStructurePersistence;
 	@BeanReference(type = JournalTemplatePersistence.class)
@@ -4309,8 +4311,6 @@ public class JournalContentSearchPersistenceImpl extends BasePersistenceImpl<Jou
 	protected LayoutPersistence layoutPersistence;
 	@BeanReference(type = PortletPreferencesPersistence.class)
 	protected PortletPreferencesPersistence portletPreferencesPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_JOURNALCONTENTSEARCH = "SELECT journalContentSearch FROM JournalContentSearch journalContentSearch";
