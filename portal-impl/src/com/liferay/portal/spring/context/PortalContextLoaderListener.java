@@ -16,7 +16,6 @@ package com.liferay.portal.spring.context;
 
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.cache.ehcache.ClearEhcacheThreadUtil;
-import com.liferay.portal.kernel.bean.BeanLocator;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.cache.MultiVMPoolUtil;
@@ -29,7 +28,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
 import com.liferay.portal.kernel.process.ClassPathUtil;
-import com.liferay.portal.kernel.servlet.DirectServletRegistry;
+import com.liferay.portal.kernel.servlet.DirectServletRegistryUtil;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.util.CharBufferPool;
 import com.liferay.portal.kernel.util.ClearThreadLocalUtil;
@@ -74,7 +73,7 @@ import org.springframework.web.context.ContextLoaderListener;
 public class PortalContextLoaderListener extends ContextLoaderListener {
 
 	@Override
-	public void contextDestroyed(ServletContextEvent event) {
+	public void contextDestroyed(ServletContextEvent servletContextEvent) {
 		PortalContextLoaderLifecycleThreadLocal.setDestroying(true);
 
 		ThreadLocalCacheManager.destroy();
@@ -101,6 +100,20 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		}
 
 		try {
+			DirectServletRegistryUtil.clearServlets();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
+
+		try {
+			HotDeployUtil.reset();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
+
+		try {
 			OSGiServiceUtil.stopRuntime();
 		}
 		catch (Exception e) {
@@ -108,7 +121,7 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		}
 
 		try {
-			super.contextDestroyed(event);
+			super.contextDestroyed(servletContextEvent);
 
 			try {
 				OSGiServiceUtil.stopFramework();
@@ -124,7 +137,6 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
-		HotDeployUtil.reset();
 		InstancePool.reset();
 		MethodCache.reset();
 		PortletBagPool.reset();
@@ -136,8 +148,6 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		ServletContext servletContext = servletContextEvent.getServletContext();
 
 		ClassPathUtil.initializeClassPaths(servletContext);
-
-		DirectServletRegistry.clearServlets();
 
 		CacheRegistryUtil.clear();
 		CharBufferPool.cleanUp();
@@ -183,10 +193,12 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 
 		ClassLoader portalClassLoader = PortalClassLoaderUtil.getClassLoader();
 
-		BeanLocator beanLocator = new BeanLocatorImpl(
+		BeanLocatorImpl beanLocatorImpl = new BeanLocatorImpl(
 			portalClassLoader, applicationContext);
 
-		PortalBeanLocatorUtil.setBeanLocator(beanLocator);
+		beanLocatorImpl.setPACLWrapPersistence(true);
+
+		PortalBeanLocatorUtil.setBeanLocator(beanLocatorImpl);
 
 		ClassLoader classLoader = portalClassLoader;
 

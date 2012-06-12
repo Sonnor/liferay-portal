@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -1539,13 +1538,14 @@ public class DDMStorageLinkPersistenceImpl extends BasePersistenceImpl<DDMStorag
 	 * Removes the d d m storage link where classPK = &#63; from the database.
 	 *
 	 * @param classPK the class p k
+	 * @return the d d m storage link that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByClassPK(long classPK)
+	public DDMStorageLink removeByClassPK(long classPK)
 		throws NoSuchStorageLinkException, SystemException {
 		DDMStorageLink ddmStorageLink = findByClassPK(classPK);
 
-		remove(ddmStorageLink);
+		return remove(ddmStorageLink);
 	}
 
 	/**
@@ -1821,8 +1821,6 @@ public class DDMStorageLinkPersistenceImpl extends BasePersistenceImpl<DDMStorag
 	protected DDMStructureLinkPersistence ddmStructureLinkPersistence;
 	@BeanReference(type = DDMTemplatePersistence.class)
 	protected DDMTemplatePersistence ddmTemplatePersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_DDMSTORAGELINK = "SELECT ddmStorageLink FROM DDMStorageLink ddmStorageLink";

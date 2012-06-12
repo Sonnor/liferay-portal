@@ -132,6 +132,10 @@ public class BlogsPortletDataHandlerImpl extends BasePortletDataHandler {
 		Element dlFileEntriesElement = entriesElement.addElement(
 			"dl-file-entries");
 		Element dlFileRanksElement = entriesElement.addElement("dl-file-ranks");
+		Element dlRepositoriesElement = entriesElement.addElement(
+			"dl-repositories");
+		Element dlRepositoryEntriesElement = entriesElement.addElement(
+			"dl-repository-entries");
 
 		List<BlogsEntry> entries = BlogsEntryUtil.findByGroupId(
 			portletDataContext.getScopeGroupId());
@@ -140,7 +144,7 @@ public class BlogsPortletDataHandlerImpl extends BasePortletDataHandler {
 			exportEntry(
 				portletDataContext, entriesElement, dlFileEntryTypesElement,
 				dlFoldersElement, dlFileEntriesElement, dlFileRanksElement,
-				entry);
+				dlRepositoriesElement, dlRepositoryEntriesElement, entry);
 		}
 
 		return document.formattedString();
@@ -194,6 +198,7 @@ public class BlogsPortletDataHandlerImpl extends BasePortletDataHandler {
 			PortletDataContext portletDataContext, Element entriesElement,
 			Element dlFileEntryTypesElement, Element dlFoldersElement,
 			Element dlFileEntriesElement, Element dlFileRanksElement,
+			Element dlRepositoriesElement, Element dlRepositoryEntriesElement,
 			BlogsEntry entry)
 		throws Exception {
 
@@ -201,7 +206,7 @@ public class BlogsPortletDataHandlerImpl extends BasePortletDataHandler {
 			return;
 		}
 
-		if (entry.getStatus() != WorkflowConstants.STATUS_APPROVED) {
+		if (!entry.isApproved() && !entry.isInTrash()) {
 			return;
 		}
 
@@ -225,8 +230,8 @@ public class BlogsPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		String content = JournalPortletDataHandlerImpl.exportReferencedContent(
 			portletDataContext, dlFileEntryTypesElement, dlFoldersElement,
-			dlFileEntriesElement, dlFileRanksElement, entryElement,
-			entry.getContent());
+			dlFileEntriesElement, dlFileRanksElement, dlRepositoriesElement,
+			dlRepositoryEntriesElement, entryElement, entry.getContent());
 
 		entry.setContent(content);
 
@@ -326,14 +331,6 @@ public class BlogsPortletDataHandlerImpl extends BasePortletDataHandler {
 		String[] trackbacks = StringUtil.split(entry.getTrackbacks());
 		int status = entry.getStatus();
 
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			entryElement, entry, _NAMESPACE);
-
-		if (status != WorkflowConstants.STATUS_APPROVED) {
-			serviceContext.setWorkflowAction(
-				WorkflowConstants.ACTION_SAVE_DRAFT);
-		}
-
 		String smallImageFileName = null;
 		InputStream smallImageInputStream = null;
 
@@ -347,6 +344,17 @@ public class BlogsPortletDataHandlerImpl extends BasePortletDataHandler {
 						StringPool.PERIOD).concat(entry.getSmallImageType());
 				smallImageInputStream =
 					portletDataContext.getZipEntryAsInputStream(smallImagePath);
+			}
+
+			ServiceContext serviceContext =
+				portletDataContext.createServiceContext(
+					entryElement, entry, _NAMESPACE);
+
+			if ((status != WorkflowConstants.STATUS_APPROVED) &&
+				(status != WorkflowConstants.STATUS_IN_TRASH)) {
+
+				serviceContext.setWorkflowAction(
+					WorkflowConstants.ACTION_SAVE_DRAFT);
 			}
 
 			BlogsEntry importedEntry = null;
@@ -366,6 +374,12 @@ public class BlogsPortletDataHandlerImpl extends BasePortletDataHandler {
 						entry.isSmallImage(), entry.getSmallImageURL(),
 						smallImageFileName, smallImageInputStream,
 						serviceContext);
+
+					if (status == WorkflowConstants.STATUS_IN_TRASH) {
+						importedEntry =
+							BlogsEntryLocalServiceUtil.moveEntryToTrash(
+								userId, importedEntry);
+					}
 				}
 				else {
 					importedEntry = BlogsEntryLocalServiceUtil.updateEntry(

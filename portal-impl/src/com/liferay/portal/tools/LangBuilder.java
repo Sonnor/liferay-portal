@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.io.OutputStreamWriter;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedWriter;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
+import com.liferay.portal.kernel.microsofttranslator.MicrosoftTranslatorException;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
@@ -109,6 +110,8 @@ public class LangBuilder {
 
 		_orderProperties(
 			new File(_langDir + "/" + _langFile + "_en_GB.properties"));
+		_orderProperties(
+			new File(_langDir + "/" + _langFile + "_fr_CA.properties"));
 
 		_createProperties(content, "ar"); // Arabic
 		_createProperties(content, "eu"); // Basque
@@ -197,10 +200,10 @@ public class LangBuilder {
 			translationId = "en_pt";
 		}
 		else if (translationId.equals("en_zh_CN")) {
-			translationId = "en_zh";
+			translationId = "en_zh-CHS";
 		}
 		else if (translationId.equals("en_zh_TW")) {
-			translationId = "en_zt";
+			translationId = "en_zh-CHT";
 		}
 		else if (translationId.equals("en_hi_IN")) {
 			translationId = "en_hi";
@@ -212,6 +215,7 @@ public class LangBuilder {
 			new OutputStreamWriter(
 				new FileOutputStream(propertiesFile), StringPool.UTF8));
 
+		boolean firstLine = true;
 		int state = 0;
 
 		String line = null;
@@ -223,15 +227,16 @@ public class LangBuilder {
 
 			if (pos != -1) {
 				String key = line.substring(0, pos);
-				String value = line.substring(pos + 1, line.length());
+				String value = line.substring(pos + 1);
 
 				if (((state == 1) && !key.startsWith("lang.")) ||
 					((state == 2) && !key.startsWith("javax.portlet.")) ||
 					((state == 3) && !key.startsWith("category.")) ||
 					((state == 4) && !key.startsWith("model.resource.")) ||
 					((state == 5) && !key.startsWith("action.")) ||
-					((state == 7) && !key.startsWith("currency.")) ||
-					((state != 7) && key.startsWith("currency."))) {
+					((state == 7) && !key.startsWith("country.")) ||
+					((state == 8) && !key.startsWith("currency.")) ||
+					((state != 8) && key.startsWith("currency."))) {
 
 					throw new RuntimeException(
 						"File " + languageId + " with state " + state +
@@ -325,7 +330,7 @@ public class LangBuilder {
 						if (Validator.isNull(translatedText)) {
 							translatedText = value + AUTOMATIC_COPY;
 						}
-						else {
+						else if (!key.startsWith("country.")) {
 							translatedText =
 								translatedText + AUTOMATIC_TRANSLATION;
 						}
@@ -343,9 +348,15 @@ public class LangBuilder {
 
 					translatedText = _fixTranslation(translatedText);
 
+					if (firstLine) {
+						firstLine = false;
+					}
+					else {
+						unsyncBufferedWriter.newLine();
+					}
+
 					unsyncBufferedWriter.write(key + "=" + translatedText);
 
-					unsyncBufferedWriter.newLine();
 					unsyncBufferedWriter.flush();
 				}
 			}
@@ -394,17 +405,30 @@ public class LangBuilder {
 
 					state = 6;
 				}
-				else if (line.startsWith("## Currency")) {
+				else if (line.startsWith("## Country")) {
 					if (state == 7) {
 						throw new RuntimeException(languageId);
 					}
 
 					state = 7;
 				}
+				else if (line.startsWith("## Currency")) {
+					if (state == 8) {
+						throw new RuntimeException(languageId);
+					}
+
+					state = 8;
+				}
+
+				if (firstLine) {
+					firstLine = false;
+				}
+				else {
+					unsyncBufferedWriter.newLine();
+				}
 
 				unsyncBufferedWriter.write(line);
 
-				unsyncBufferedWriter.newLine();
 				unsyncBufferedWriter.flush();
 			}
 		}
@@ -422,6 +446,9 @@ public class LangBuilder {
 			else {
 				value = StringUtil.replace(value, " this ", " This ");
 			}
+		}
+		else {
+			value = StringUtil.replace(value, " From ", " from ");
 		}
 
 		return value;
@@ -457,6 +484,7 @@ public class LangBuilder {
 		Set<String> messages = new TreeSet<String>();
 
 		boolean begin = false;
+		boolean firstLine = true;
 
 		String line = null;
 
@@ -466,8 +494,7 @@ public class LangBuilder {
 			if (pos != -1) {
 				String key = line.substring(0, pos);
 
-				String value = _fixTranslation(
-					line.substring(pos + 1, line.length()));
+				String value = _fixTranslation(line.substring(pos + 1));
 
 				value = _fixEnglishTranslation(key, value);
 
@@ -483,23 +510,29 @@ public class LangBuilder {
 				messages.add(key + "=" + value);
 			}
 			else {
-				if (begin == true && line.equals("")) {
-					_sortAndWrite(unsyncBufferedWriter, messages);
+				if (begin && line.equals("")) {
+					_sortAndWrite(unsyncBufferedWriter, messages, firstLine);
 				}
 
 				if (line.equals("")) {
 					begin = !begin;
 				}
 
+				if (firstLine) {
+					firstLine = false;
+				}
+				else {
+					unsyncBufferedWriter.newLine();
+				}
+
 				unsyncBufferedWriter.write(line);
-				unsyncBufferedWriter.newLine();
 			}
 
 			unsyncBufferedWriter.flush();
 		}
 
-		if (messages.size() > 0) {
-			_sortAndWrite(unsyncBufferedWriter, messages);
+		if (!messages.isEmpty()) {
+			_sortAndWrite(unsyncBufferedWriter, messages, firstLine);
 		}
 
 		unsyncBufferedReader.close();
@@ -509,14 +542,18 @@ public class LangBuilder {
 	}
 
 	private void _sortAndWrite(
-			UnsyncBufferedWriter unsyncBufferedWriter, Set<String> messages)
+			UnsyncBufferedWriter unsyncBufferedWriter, Set<String> messages,
+			boolean firstLine)
 		throws IOException {
 
 		String[] messagesArray = messages.toArray(new String[messages.size()]);
 
 		for (int i = 0; i < messagesArray.length; i++) {
+			if (!firstLine || (i != 0)) {
+				unsyncBufferedWriter.newLine();
+			}
+
 			unsyncBufferedWriter.write(messagesArray[i]);
-			unsyncBufferedWriter.newLine();
 		}
 
 		messages.clear();
@@ -532,8 +569,14 @@ public class LangBuilder {
 			translationId.equals("en_hr") ||
 			translationId.equals("en_cs") ||
 			translationId.equals("en_da") ||
+			translationId.equals("en_et") ||
 			translationId.equals("en_fi") ||
 			translationId.equals("en_gl") ||
+
+			// LPS-26741
+
+			translationId.equals("en_de") ||
+
 			translationId.equals("en_iw") ||
 			translationId.equals("en_hi") ||
 			translationId.equals("en_hu") ||
@@ -551,14 +594,13 @@ public class LangBuilder {
 			translationId.equals("en_sv") ||
 			translationId.equals("en_tr") ||
 			translationId.equals("en_uk") ||
-			translationId.equals("en_vi") ||
-			translationId.equals("en_et")) {
+			translationId.equals("en_vi")) {
 
 			// Automatic translator does not support Arabic, Basque, Bulgarian,
-			// Catalan, Czech, Croatian, Danish, Finnish, Galician, Hebrew,
-			// Hindi, Hungarian, Indonesian, Lao, Norwegian Bokmål, Persian,
-			// Polish, Romanian, Russian, Serbian, Slovak, Slovene, Swedish,
-			// Turkish, Ukrainian, or Vietnamese
+			// Catalan, Croatian, Czech, Danish, Estonian, Finnish, Galician,
+			// German, Hebrew, Hindi, Hungarian, Indonesian, Lao,
+			// Norwegian Bokmål, Persian, Polish, Romanian, Russian, Serbian,
+			// Slovak, Slovene, Swedish, Turkish, Ukrainian, or Vietnamese
 
 			return null;
 		}
@@ -585,13 +627,17 @@ public class LangBuilder {
 			Translation translation = (Translation)wci.convert("");
 
 			toText = translation.getToText();
-
-			if ((toText != null) && toText.contains("Babel Fish")) {
-				toText = null;
-			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			Throwable cause = e.getCause();
+
+			if (cause instanceof MicrosoftTranslatorException) {
+				System.out.println(
+					cause.getClass().getName() + ": " + cause.getMessage());
+			}
+			else {
+				e.printStackTrace();
+			}
 		}
 
 		// Keep trying

@@ -14,22 +14,27 @@
 
 package com.liferay.portlet.layoutconfiguration.util.xml;
 
+import com.liferay.portal.kernel.portlet.PortletContainerUtil;
+import com.liferay.portal.kernel.servlet.DynamicServletRequest;
+import com.liferay.portal.kernel.servlet.StringServletResponse;
+import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.PortletConstants;
-import com.liferay.portlet.layoutconfiguration.util.RuntimePortletUtil;
+import com.liferay.portal.service.PortletLocalServiceUtil;
+import com.liferay.portal.theme.ThemeDisplay;
+import com.liferay.portal.util.WebKeys;
 
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Douglas Wong
  */
 public class PortletLogic extends RuntimeLogic {
 
@@ -39,16 +44,54 @@ public class PortletLogic extends RuntimeLogic {
 
 	public static final String OPEN_TAG = "<runtime-portlet";
 
-	public PortletLogic(
-		ServletContext servletContext, HttpServletRequest request,
-		HttpServletResponse response, RenderRequest renderRequest,
-		RenderResponse renderResponse) {
+	public static String getRuntimePortletIds(String content) throws Exception {
+		StringBundler sb = new StringBundler();
 
-		_servletContext = servletContext;
+		for (int index = 0;;) {
+			index = content.indexOf(OPEN_TAG, index);
+
+			if (index == -1) {
+				break;
+			}
+
+			int close1 = content.indexOf(CLOSE_1_TAG, index);
+			int close2 = content.indexOf(CLOSE_2_TAG, index);
+
+			int closeIndex = -1;
+
+			if ((close2 == -1) || ((close1 != -1) && (close1 < close2))) {
+				closeIndex = close1 + CLOSE_1_TAG.length();
+			}
+			else {
+				closeIndex = close2 + CLOSE_2_TAG.length();
+			}
+
+			if (closeIndex == -1) {
+				break;
+			}
+
+			if (sb.length() > 0) {
+				sb.append(StringPool.COMMA);
+			}
+
+			sb.append(
+				_getRuntimePortletId(content.substring(index, closeIndex)));
+
+			index = closeIndex;
+		}
+
+		if (sb.length() == 0) {
+			return null;
+		}
+
+		return sb.toString();
+	}
+
+	public PortletLogic(
+		HttpServletRequest request, HttpServletResponse response) {
+
 		_request = request;
 		_response = response;
-		_renderRequest = renderRequest;
-		_renderResponse = renderResponse;
 	}
 
 	@Override
@@ -63,13 +106,13 @@ public class PortletLogic extends RuntimeLogic {
 
 	@Override
 	public String processXML(String xml) throws Exception {
-		Document doc = SAXReaderUtil.read(xml);
+		Document document = SAXReaderUtil.read(xml);
 
-		Element root = doc.getRootElement();
+		Element rootElement = document.getRootElement();
 
-		String rootPortletId = root.attributeValue("name");
-		String instanceId = root.attributeValue("instance");
-		String queryString = root.attributeValue("queryString");
+		String rootPortletId = rootElement.attributeValue("name");
+		String instanceId = rootElement.attributeValue("instance");
+		String queryString = rootElement.attributeValue("queryString");
 
 		String portletId = rootPortletId;
 
@@ -77,15 +120,39 @@ public class PortletLogic extends RuntimeLogic {
 			portletId += PortletConstants.INSTANCE_SEPARATOR + instanceId;
 		}
 
-		return RuntimePortletUtil.processPortlet(
-			_servletContext, _request, _response, _renderRequest,
-			_renderResponse, portletId, queryString, false);
+		StringServletResponse stringServletResponse =
+			new StringServletResponse(_response);
+
+		HttpServletRequest request = DynamicServletRequest.addQueryString(
+			_request, queryString);
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		Portlet portlet = PortletLocalServiceUtil.getPortletById(
+			themeDisplay.getCompanyId(), portletId);
+
+		PortletContainerUtil.render(request, stringServletResponse, portlet);
+
+		return stringServletResponse.getString();
 	}
 
-	private RenderRequest _renderRequest;
-	private RenderResponse _renderResponse;
+	private static String _getRuntimePortletId(String xml) throws Exception {
+		Document document = SAXReaderUtil.read(xml);
+
+		Element rootElement = document.getRootElement();
+
+		String instanceId = rootElement.attributeValue("instance");
+		String portletId = rootElement.attributeValue("name");
+
+		if (Validator.isNotNull(instanceId)) {
+			portletId += PortletConstants.INSTANCE_SEPARATOR + instanceId;
+		}
+
+		return portletId;
+	}
+
 	private HttpServletRequest _request;
 	private HttpServletResponse _response;
-	private ServletContext _servletContext;
 
 }

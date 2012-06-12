@@ -111,8 +111,9 @@ public class LocalizationImpl implements Localization {
 
 		Locale requestedLocale = LocaleUtil.fromLanguageId(requestedLanguageId);
 
-		if (useDefault && LanguageUtil.isDuplicateLanguageCode(
-			requestedLocale.getLanguage())) {
+		if (useDefault &&
+			LanguageUtil.isDuplicateLanguageCode(
+				requestedLocale.getLanguage())) {
 
 			Locale priorityLocale = LanguageUtil.getLocale(
 				requestedLocale.getLanguage());
@@ -568,6 +569,29 @@ public class LocalizationImpl implements Localization {
 		throws Exception {
 
 		preferences.setValues(getPreferencesKey(key, languageId), values);
+	}
+
+	public String updateLocalization(
+		Map<Locale, String> localizationMap, String xml, String key,
+		String defaultLanguageId) {
+
+		Locale[] locales = LanguageUtil.getAvailableLocales();
+
+		for (Locale locale : locales) {
+			String value = localizationMap.get(locale);
+
+			String languageId = LocaleUtil.toLanguageId(locale);
+
+			if (Validator.isNotNull(value)) {
+				xml = updateLocalization(
+					xml, key, value, languageId, defaultLanguageId);
+			}
+			else {
+				xml = removeLocalization(xml, key, languageId);
+			}
+		}
+
+		return xml;
 	}
 
 	public String updateLocalization(String xml, String key, String value) {

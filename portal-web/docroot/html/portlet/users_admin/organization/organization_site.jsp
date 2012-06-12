@@ -21,6 +21,12 @@ Organization organization = (Organization)request.getAttribute(WebKeys.ORGANIZAT
 
 List<LayoutSetPrototype> layoutSetPrototypes = LayoutSetPrototypeServiceUtil.search(company.getCompanyId(), Boolean.TRUE, null);
 
+LayoutSet privateLayoutSet = null;
+LayoutSetPrototype privateLayoutSetPrototype = null;
+
+LayoutSet publicLayoutSet = null;
+LayoutSetPrototype publicLayoutSetPrototype = null;
+
 boolean site = false;
 
 if (organization != null) {
@@ -29,8 +35,33 @@ if (organization != null) {
 	site = organizationGroup.isSite();
 
 	if (site) {
-		LayoutLocalServiceUtil.getLayouts(organizationGroup.getGroupId(), false, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
-		LayoutLocalServiceUtil.getLayouts(organizationGroup.getGroupId(), true, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+		try {
+			LayoutLocalServiceUtil.getLayouts(organizationGroup.getGroupId(), false, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+
+			privateLayoutSet = LayoutSetLocalServiceUtil.getLayoutSet(organizationGroup.getGroupId(), true);
+
+			String layoutSetPrototypeUuid = privateLayoutSet.getLayoutSetPrototypeUuid();
+
+			if (Validator.isNotNull(layoutSetPrototypeUuid)) {
+				privateLayoutSetPrototype = LayoutSetPrototypeLocalServiceUtil.getLayoutSetPrototypeByUuidAndCompanyId(layoutSetPrototypeUuid, company.getCompanyId());
+			}
+		}
+		catch (Exception e) {
+		}
+
+		try {
+			LayoutLocalServiceUtil.getLayouts(organizationGroup.getGroupId(), true, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+
+			publicLayoutSet = LayoutSetLocalServiceUtil.getLayoutSet(organizationGroup.getGroupId(), false);
+
+			String layoutSetPrototypeUuid = publicLayoutSet.getLayoutSetPrototypeUuid();
+
+			if (Validator.isNotNull(layoutSetPrototypeUuid)) {
+				publicLayoutSetPrototype = LayoutSetPrototypeLocalServiceUtil.getLayoutSetPrototypeByUuidAndCompanyId(layoutSetPrototypeUuid, company.getCompanyId());
+			}
+		}
+		catch (Exception e) {
+		}
 	}
 }
 %>
@@ -39,7 +70,7 @@ if (organization != null) {
 
 <aui:fieldset>
 	<c:choose>
-		<c:when test="<%= (organization == null) || ((organization.getPublicLayoutsPageCount() == 0) && (organization.getPrivateLayoutsPageCount() == 0)) %>">
+		<c:when test="<%= (organization == null) || ((publicLayoutSetPrototype == null) && (privateLayoutSetPrototype == null)) %>">
 			<aui:input label="create-site" name="site" type="checkbox" value="<%= site %>" />
 		</c:when>
 		<c:otherwise>
@@ -49,7 +80,7 @@ if (organization != null) {
 
 	<div id="<portlet:namespace />siteTemplates">
 		<c:choose>
-			<c:when test="<%= ((organization == null) || (organization.getPublicLayoutsPageCount() == 0)) && !layoutSetPrototypes.isEmpty() %>">
+			<c:when test="<%= ((organization == null) || ((publicLayoutSetPrototype == null) && (organization.getPublicLayoutsPageCount() == 0))) && !layoutSetPrototypes.isEmpty() %>">
 				<aui:select label="public-pages" name="publicLayoutSetPrototypeId">
 					<aui:option label='<%= organization == null ? "default" : "none" %>' selected="<%= true %>" value="" />
 
@@ -57,7 +88,7 @@ if (organization != null) {
 					for (LayoutSetPrototype layoutSetPrototype : layoutSetPrototypes) {
 					%>
 
-						<aui:option label="<%= layoutSetPrototype.getName(user.getLanguageId()) %>" value="<%= layoutSetPrototype.getLayoutSetPrototypeId() %>" />
+						<aui:option label="<%= HtmlUtil.escape(layoutSetPrototype.getName(user.getLanguageId())) %>" value="<%= layoutSetPrototype.getLayoutSetPrototypeId() %>" />
 
 					<%
 					}
@@ -70,7 +101,7 @@ if (organization != null) {
 					<c:choose>
 						<c:when test="<%= (organization != null) && (organization.getPublicLayoutsPageCount() > 0) %>">
 
-							<liferay-portlet:actionURL var="publicPagesURL" portletName="<%= PortletKeys.SITE_REDIRECTOR %>">
+							<liferay-portlet:actionURL portletName="<%= PortletKeys.SITE_REDIRECTOR %>" var="publicPagesURL">
 								<portlet:param name="struts_action" value="/my_sites/view" />
 								<portlet:param name="groupId" value="<%= String.valueOf(organization.getGroup().getGroupId()) %>" />
 								<portlet:param name="privateLayout" value="<%= Boolean.FALSE.toString() %>" />
@@ -94,7 +125,7 @@ if (organization != null) {
 		</c:choose>
 
 		<c:choose>
-			<c:when test="<%= ((organization == null) || (organization.getPrivateLayoutsPageCount() == 0)) && !layoutSetPrototypes.isEmpty() %>">
+			<c:when test="<%= ((organization == null) || ((privateLayoutSetPrototype == null) && (organization.getPrivateLayoutsPageCount() == 0))) && !layoutSetPrototypes.isEmpty() %>">
 				<aui:select label="private-pages" name="privateLayoutSetPrototypeId">
 					<aui:option label='<%= organization == null ? "default" : "none" %>' selected="<%= true %>" value="" />
 
@@ -102,7 +133,7 @@ if (organization != null) {
 					for (LayoutSetPrototype layoutSetPrototype : layoutSetPrototypes) {
 					%>
 
-						<aui:option label="<%= layoutSetPrototype.getName(user.getLanguageId()) %>" value="<%= layoutSetPrototype.getLayoutSetPrototypeId() %>" />
+						<aui:option label="<%= HtmlUtil.escape(layoutSetPrototype.getName(user.getLanguageId())) %>" value="<%= layoutSetPrototype.getLayoutSetPrototypeId() %>" />
 
 					<%
 					}
@@ -114,7 +145,7 @@ if (organization != null) {
 				<aui:field-wrapper label="private-pages">
 					<c:choose>
 						<c:when test="<%= (organization != null) && (organization.getPrivateLayoutsPageCount() > 0) %>">
-							<liferay-portlet:actionURL var="privatePagesURL" portletName="<%= PortletKeys.SITE_REDIRECTOR %>">
+							<liferay-portlet:actionURL portletName="<%= PortletKeys.SITE_REDIRECTOR %>" var="privatePagesURL">
 								<portlet:param name="struts_action" value="/my_sites/view" />
 								<portlet:param name="groupId" value="<%= String.valueOf(organization.getGroup().getGroupId()) %>" />
 								<portlet:param name="privateLayout" value="<%= Boolean.TRUE.toString() %>" />

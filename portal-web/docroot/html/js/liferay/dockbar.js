@@ -408,14 +408,7 @@ AUI.add(
 
 						var pinned = BODY.hasClass('lfr-dockbar-pinned');
 
-						A.io.request(
-							themeDisplay.getPathMain() + '/portal/session_click',
-							{
-								data: {
-									'liferay_dockbar_pinned': pinned
-								}
-							}
-						);
+						Liferay.Store('liferay_dockbar_pinned', pinned);
 
 						Liferay.fire(
 							'dockbar:pinned',
@@ -683,7 +676,7 @@ AUI.add(
 					if (!manageCustomizationLink.hasClass('disabled')) {
 						instance._controls = dockBar.one('.layout-customizable-controls');
 
-						var columns = A.all('.portlet-column .portlet-dropzone:not(.portlet-dropzone-disabled)');
+						var columns = A.all('.portlet-column');
 
 						var customizationsHandle;
 
@@ -782,7 +775,7 @@ AUI.add(
 
 				Liferay.fire('dockbarLoaded');
 			},
-			['aui-io-request', 'aui-overlay-context', 'liferay-dockbar-underlay', 'node-focusmanager']
+			['aui-io-request', 'aui-overlay-context', 'liferay-dockbar-underlay', 'liferay-store', 'node-focusmanager']
 		);
 
 		Liferay.provide(
@@ -817,6 +810,7 @@ AUI.add(
 				var data = {
 					cmd: 'update_type_settings',
 					doAsUserId: themeDisplay.getDoAsUserIdEncoded(),
+					p_auth: Liferay.authToken,
 					p_l_id: themeDisplay.getPlid(),
 					p_v_g_id: themeDisplay.getParentGroupId()
 				};

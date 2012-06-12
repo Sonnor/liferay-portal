@@ -51,9 +51,6 @@ public class UserGroupFinderImpl
 	public static final String FIND_BY_C_N_D =
 		UserGroupFinder.class.getName() + ".findByC_N_D";
 
-	public static final String JOIN_BY_GROUPS_PERMISSIONS =
-		UserGroupFinder.class.getName() + ".joinByGroupsPermissions";
-
 	public static final String JOIN_BY_USER_GROUP_GROUP_ROLE =
 		UserGroupFinder.class.getName() + ".joinByUserGroupGroupRole";
 
@@ -124,6 +121,7 @@ public class UserGroupFinderImpl
 				descriptions);
 			sql = StringUtil.replace(sql, "[$JOIN$]", getJoin(params));
 			sql = StringUtil.replace(sql, "[$WHERE$]", getWhere(params));
+			sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
 
 			SQLQuery q = session.createSQLQuery(sql);
 
@@ -295,11 +293,7 @@ public class UserGroupFinderImpl
 
 		StringBundler sb = new StringBundler(params.size());
 
-		Iterator<Map.Entry<String, Object>> itr = params.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<String, Object> entry = itr.next();
-
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 
@@ -314,10 +308,7 @@ public class UserGroupFinderImpl
 	protected String getJoin(String key) {
 		String join = StringPool.BLANK;
 
-		if (key.equals("permissionsResourceId")) {
-			join = CustomSQLUtil.get(JOIN_BY_GROUPS_PERMISSIONS);
-		}
-		else if (key.equals("userGroupGroupRole")) {
+		if (key.equals("userGroupGroupRole")) {
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUP_GROUP_ROLE);
 		}
 		else if (key.equals("userGroupsGroups")) {
@@ -351,11 +342,7 @@ public class UserGroupFinderImpl
 
 		StringBundler sb = new StringBundler(params.size());
 
-		Iterator<Map.Entry<String, Object>> itr = params.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<String, Object> entry = itr.next();
-
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 
@@ -370,10 +357,7 @@ public class UserGroupFinderImpl
 	protected String getWhere(String key) {
 		String join = StringPool.BLANK;
 
-		if (key.equals("permissionsResourceId")) {
-			join = CustomSQLUtil.get(JOIN_BY_GROUPS_PERMISSIONS);
-		}
-		else if (key.equals("userGroupGroupRole")) {
+		if (key.equals("userGroupGroupRole")) {
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUP_GROUP_ROLE);
 		}
 		else if (key.equals("userGroupsGroups")) {

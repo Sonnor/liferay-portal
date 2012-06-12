@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.mobile.device.Device;
 import com.liferay.portal.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
+import com.liferay.portal.kernel.util.Mergeable;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.TimeZoneThreadLocal;
 import com.liferay.portal.kernel.util.Validator;
@@ -55,7 +56,8 @@ import javax.portlet.PortletURL;
 /**
  * @author Brian Wing Shun Chan
  */
-public class ThemeDisplay implements Serializable {
+public class ThemeDisplay
+	implements Cloneable, Mergeable<ThemeDisplay>, Serializable {
 
 	public ThemeDisplay() {
 		if (_log.isDebugEnabled()) {
@@ -63,6 +65,21 @@ public class ThemeDisplay implements Serializable {
 		}
 
 		_portletDisplay.setThemeDisplay(this);
+	}
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		ThemeDisplay themeDisplay = (ThemeDisplay)super.clone();
+
+		PortletDisplay portletDisplay = new PortletDisplay();
+
+		_portletDisplay.copyTo(portletDisplay);
+
+		themeDisplay._portletDisplay = portletDisplay;
+
+		portletDisplay.setThemeDisplay(themeDisplay);
+
+		return themeDisplay;
 	}
 
 	public Account getAccount() {
@@ -516,6 +533,10 @@ public class ThemeDisplay implements Serializable {
 		return _addSessionIdToURL;
 	}
 
+	public boolean isAjax() {
+		return _ajax;
+	}
+
 	public boolean isFacebook() {
 		return _facebook;
 	}
@@ -691,12 +712,27 @@ public class ThemeDisplay implements Serializable {
 		return _widget;
 	}
 
+	public ThemeDisplay merge(ThemeDisplay themeDisplay) {
+		if ((themeDisplay == null) || (themeDisplay == this)) {
+			return this;
+		}
+
+		_includePortletCssJs = themeDisplay._includePortletCssJs;
+		_includeServiceJs = themeDisplay._includeServiceJs;
+
+		return this;
+	}
+
 	public void setAccount(Account account) {
 		_account = account;
 	}
 
 	public void setAddSessionIdToURL(boolean addSessionIdToURL) {
 		_addSessionIdToURL = addSessionIdToURL;
+	}
+
+	public void setAjax(boolean ajax) {
+		_ajax = ajax;
 	}
 
 	public void setCDNDynamicResourcesHost(String cdnDynamicResourcesHost) {
@@ -853,7 +889,7 @@ public class ThemeDisplay implements Serializable {
 
 			String host = getCDNHost();
 
-			if (Validator.isNull(host) && isFacebook()) {
+			if (Validator.isNull(host)) {
 				host = getPortalURL();
 			}
 
@@ -863,7 +899,7 @@ public class ThemeDisplay implements Serializable {
 
 			String dynamicResourcesHost = getCDNDynamicResourcesHost();
 
-			if (Validator.isNull(dynamicResourcesHost) && isFacebook()) {
+			if (Validator.isNull(dynamicResourcesHost)) {
 				dynamicResourcesHost = getPortalURL();
 			}
 
@@ -1256,6 +1292,7 @@ public class ThemeDisplay implements Serializable {
 
 	private Account _account;
 	private boolean _addSessionIdToURL;
+	private boolean _ajax;
 	private String _cdnDynamicResourcesHost = StringPool.BLANK;
 	private String _cdnHost = StringPool.BLANK;
 	private ColorScheme _colorScheme;

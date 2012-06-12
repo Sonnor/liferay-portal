@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -1190,13 +1189,14 @@ public class WikiPageResourcePersistenceImpl extends BasePersistenceImpl<WikiPag
 	 *
 	 * @param nodeId the node ID
 	 * @param title the title
+	 * @return the wiki page resource that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByN_T(long nodeId, String title)
+	public WikiPageResource removeByN_T(long nodeId, String title)
 		throws NoSuchPageResourceException, SystemException {
 		WikiPageResource wikiPageResource = findByN_T(nodeId, title);
 
-		remove(wikiPageResource);
+		return remove(wikiPageResource);
 	}
 
 	/**
@@ -1420,8 +1420,6 @@ public class WikiPageResourcePersistenceImpl extends BasePersistenceImpl<WikiPag
 	protected WikiPagePersistence wikiPagePersistence;
 	@BeanReference(type = WikiPageResourcePersistence.class)
 	protected WikiPageResourcePersistence wikiPageResourcePersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_WIKIPAGERESOURCE = "SELECT wikiPageResource FROM WikiPageResource wikiPageResource";

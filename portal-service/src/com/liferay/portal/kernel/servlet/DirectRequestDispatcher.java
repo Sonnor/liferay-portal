@@ -21,19 +21,24 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Shuyang Zhou
  */
 public class DirectRequestDispatcher implements RequestDispatcher {
 
-	public DirectRequestDispatcher(Servlet servlet) {
+	public DirectRequestDispatcher(Servlet servlet, String queryString) {
 		_servlet = servlet;
+		_queryString = queryString;
 	}
 
 	public void forward(
 			ServletRequest servletRequest, ServletResponse servletResponse)
 		throws IOException, ServletException {
+
+		servletRequest = DynamicServletRequest.addQueryString(
+			(HttpServletRequest)servletRequest, _queryString);
 
 		_servlet.service(servletRequest, servletResponse);
 	}
@@ -42,9 +47,13 @@ public class DirectRequestDispatcher implements RequestDispatcher {
 			ServletRequest servletRequest, ServletResponse servletResponse)
 		throws IOException, ServletException {
 
+		servletRequest = DynamicServletRequest.addQueryString(
+			(HttpServletRequest)servletRequest, _queryString);
+
 		_servlet.service(servletRequest, servletResponse);
 	}
 
+	private String _queryString;
 	private Servlet _servlet;
 
 }

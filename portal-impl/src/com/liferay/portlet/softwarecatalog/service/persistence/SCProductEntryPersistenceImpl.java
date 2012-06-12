@@ -47,7 +47,7 @@ import com.liferay.portal.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
 import com.liferay.portal.service.persistence.GroupPersistence;
 import com.liferay.portal.service.persistence.ImagePersistence;
-import com.liferay.portal.service.persistence.ResourcePersistence;
+import com.liferay.portal.service.persistence.SubscriptionPersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -2707,13 +2707,15 @@ public class SCProductEntryPersistenceImpl extends BasePersistenceImpl<SCProduct
 	 *
 	 * @param repoGroupId the repo group ID
 	 * @param repoArtifactId the repo artifact ID
+	 * @return the s c product entry that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByRG_RA(String repoGroupId, String repoArtifactId)
+	public SCProductEntry removeByRG_RA(String repoGroupId,
+		String repoArtifactId)
 		throws NoSuchProductEntryException, SystemException {
 		SCProductEntry scProductEntry = findByRG_RA(repoGroupId, repoArtifactId);
 
-		remove(scProductEntry);
+		return remove(scProductEntry);
 	}
 
 	/**
@@ -3650,8 +3652,8 @@ public class SCProductEntryPersistenceImpl extends BasePersistenceImpl<SCProduct
 	protected GroupPersistence groupPersistence;
 	@BeanReference(type = ImagePersistence.class)
 	protected ImagePersistence imagePersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
+	@BeanReference(type = SubscriptionPersistence.class)
+	protected SubscriptionPersistence subscriptionPersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	@BeanReference(type = MBMessagePersistence.class)

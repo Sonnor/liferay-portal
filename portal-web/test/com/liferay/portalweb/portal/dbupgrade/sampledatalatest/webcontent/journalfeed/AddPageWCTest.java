@@ -24,6 +24,9 @@ public class AddPageWCTest extends BaseTestCase {
 	public void testAddPageWC() throws Exception {
 		selenium.open("/web/guest/home/");
 		loadRequiredJavaScriptModules();
+		assertEquals(RuntimeVariables.replace("Go to"),
+			selenium.getText("//li[@id='_145_mySites']/a/span"));
+		selenium.mouseOver("//li[@id='_145_mySites']/a/span");
 
 		for (int second = 0;; second++) {
 			if (second >= 90) {
@@ -85,7 +88,7 @@ public class AddPageWCTest extends BaseTestCase {
 		loadRequiredJavaScriptModules();
 		selenium.clickAt("//div/span/button[1]",
 			RuntimeVariables.replace("Add Page"));
-		selenium.type("//input[@id='_156_name_en_US']",
+		selenium.type("//input[@name='_156_name_en_US']",
 			RuntimeVariables.replace("WC Journal Feed Page"));
 		selenium.clickAt("//input[@value='Add Page']",
 			RuntimeVariables.replace("Add Page"));

@@ -27,9 +27,9 @@ String type = displayTerms.getType();
 %>
 
 <liferay-ui:search-toggle
-	id="toggle_id_directory_organization_search"
-	displayTerms="<%= displayTerms %>"
 	buttonLabel="search"
+	displayTerms="<%= displayTerms %>"
+	id="toggle_id_directory_organization_search"
 >
 	<aui:fieldset>
 		<aui:input name="<%= displayTerms.NAME %>" size="20" type="text" value="<%= displayTerms.getName() %>" />
@@ -46,6 +46,7 @@ String type = displayTerms.getType();
 			<%
 			}
 			%>
+
 		</aui:select>
 
 		<aui:input name="<%= displayTerms.STREET %>" size="20" type="text" value="<%= displayTerms.getStreet() %>" />
@@ -93,8 +94,9 @@ if (displayTerms.getParentOrganizationId() > 0) {
 			{
 				select: '<portlet:namespace /><%= displayTerms.COUNTRY_ID %>',
 				selectData: Liferay.Address.getCountries,
-				selectDesc: 'name',
+				selectDesc: 'nameCurrentValue',
 				selectId: 'countryId',
+				selectSort: '<%= true %>',
 				selectVal: '<%= displayTerms.getCountryId() %>'
 			},
 			{

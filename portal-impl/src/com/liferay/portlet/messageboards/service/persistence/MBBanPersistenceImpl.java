@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -1911,13 +1910,14 @@ public class MBBanPersistenceImpl extends BasePersistenceImpl<MBBan>
 	 *
 	 * @param groupId the group ID
 	 * @param banUserId the ban user ID
+	 * @return the message boards ban that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByG_B(long groupId, long banUserId)
+	public MBBan removeByG_B(long groupId, long banUserId)
 		throws NoSuchBanException, SystemException {
 		MBBan mbBan = findByG_B(groupId, banUserId);
 
-		remove(mbBan);
+		return remove(mbBan);
 	}
 
 	/**
@@ -2234,8 +2234,6 @@ public class MBBanPersistenceImpl extends BasePersistenceImpl<MBBan>
 	protected MBThreadPersistence mbThreadPersistence;
 	@BeanReference(type = MBThreadFlagPersistence.class)
 	protected MBThreadFlagPersistence mbThreadFlagPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_MBBAN = "SELECT mbBan FROM MBBan mbBan";

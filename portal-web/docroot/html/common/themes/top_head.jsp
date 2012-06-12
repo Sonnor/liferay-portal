@@ -148,7 +148,7 @@ if (markupHeaders != null) {
 	}
 }
 
-StringBundler pageTopSB = (StringBundler)request.getAttribute(WebKeys.PAGE_TOP);
+StringBundler pageTopSB = OutputTag.getData(request, WebKeys.PAGE_TOP);
 %>
 
 <c:if test="<%= pageTopSB != null %>">
@@ -162,53 +162,6 @@ StringBundler pageTopSB = (StringBundler)request.getAttribute(WebKeys.PAGE_TOP);
 <%-- Theme CSS --%>
 
 <link class="lfr-css-file" href="<%= HtmlUtil.escapeAttribute(PortalUtil.getStaticResourceURL(request, themeDisplay.getPathThemeCss() + "/main.css")) %>" rel="stylesheet" type="text/css" />
-
-<style type="text/css">
-	/* <![CDATA[ */
-		<c:if test="<%= BrowserSnifferUtil.isIe(request) && (BrowserSnifferUtil.getMajorVersion(request) < 7) %>">
-			img, .png {
-				position: relative;
-				behavior: expression(
-					(this.runtimeStyle.behavior = "none") &&
-					(
-						this.pngSet || (this.src && this.src.toLowerCase().indexOf('spacer.png') > -1) ?
-							this.pngSet = true :
-								(
-									this.nodeName == "IMG" &&
-									(
-										(
-											(this.src.toLowerCase().indexOf('.png') > -1) ||
-											(this.className && ([''].concat(this.className.split(' ')).concat(['']).join('|').indexOf('|png|')) > -1)
-										) &&
-										(this.className.indexOf('no-png-fix') == -1)
-									) ?
-										(
-											this.runtimeStyle.backgroundImage = "none",
-											this.runtimeStyle.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" + this.src + "', sizingMethod='image')",
-											this.src = "<%= themeDisplay.getPathThemeImages() %>/spacer.png"
-										) :
-											(
-												(
-													(this.currentStyle.backgroundImage.toLowerCase().indexOf('.png') > -1) ||
-													(this.className && ([''].concat(this.className.split(' ')).concat(['']).join('|').indexOf('|png|')) > -1)
-												) ?
-													(
-															this.origBg = this.origBg ?
-																this.origBg :
-																this.currentStyle.backgroundImage.toString().replace('url("','').replace('")',''),
-																this.runtimeStyle.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" + this.origBg + "', sizingMethod='crop')",
-																this.runtimeStyle.backgroundImage = "none"
-													) :
-														''
-											)
-								),
-								this.pngSet = true
-					)
-				);
-			}
-		</c:if>
-	/* ]]> */
-</style>
 
 <%-- User Inputted Layout CSS --%>
 

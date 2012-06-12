@@ -1205,14 +1205,16 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	 *
 	 * @param buildNamespace the build namespace
 	 * @param buildNumber the build number
+	 * @return the service component that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByBNS_BNU(String buildNamespace, long buildNumber)
+	public ServiceComponent removeByBNS_BNU(String buildNamespace,
+		long buildNumber)
 		throws NoSuchServiceComponentException, SystemException {
 		ServiceComponent serviceComponent = findByBNS_BNU(buildNamespace,
 				buildNumber);
 
-		remove(serviceComponent);
+		return remove(serviceComponent);
 	}
 
 	/**
@@ -1476,8 +1478,6 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	protected MembershipRequestPersistence membershipRequestPersistence;
 	@BeanReference(type = OrganizationPersistence.class)
 	protected OrganizationPersistence organizationPersistence;
-	@BeanReference(type = OrgGroupPermissionPersistence.class)
-	protected OrgGroupPermissionPersistence orgGroupPermissionPersistence;
 	@BeanReference(type = OrgGroupRolePersistence.class)
 	protected OrgGroupRolePersistence orgGroupRolePersistence;
 	@BeanReference(type = OrgLaborPersistence.class)
@@ -1488,8 +1488,6 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	protected PasswordPolicyRelPersistence passwordPolicyRelPersistence;
 	@BeanReference(type = PasswordTrackerPersistence.class)
 	protected PasswordTrackerPersistence passwordTrackerPersistence;
-	@BeanReference(type = PermissionPersistence.class)
-	protected PermissionPersistence permissionPersistence;
 	@BeanReference(type = PhonePersistence.class)
 	protected PhonePersistence phonePersistence;
 	@BeanReference(type = PluginSettingPersistence.class)
@@ -1510,16 +1508,12 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	protected RepositoryPersistence repositoryPersistence;
 	@BeanReference(type = RepositoryEntryPersistence.class)
 	protected RepositoryEntryPersistence repositoryEntryPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = ResourceActionPersistence.class)
 	protected ResourceActionPersistence resourceActionPersistence;
 	@BeanReference(type = ResourceBlockPersistence.class)
 	protected ResourceBlockPersistence resourceBlockPersistence;
 	@BeanReference(type = ResourceBlockPermissionPersistence.class)
 	protected ResourceBlockPermissionPersistence resourceBlockPermissionPersistence;
-	@BeanReference(type = ResourceCodePersistence.class)
-	protected ResourceCodePersistence resourceCodePersistence;
 	@BeanReference(type = ResourcePermissionPersistence.class)
 	protected ResourcePermissionPersistence resourcePermissionPersistence;
 	@BeanReference(type = ResourceTypePermissionPersistence.class)

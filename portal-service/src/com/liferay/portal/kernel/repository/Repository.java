@@ -85,6 +85,9 @@ public interface Repository {
 	public void deleteFileEntry(long folderId, String title)
 		throws PortalException, SystemException;
 
+	public void deleteFileVersion(long fileEntryId, String version)
+		throws PortalException, SystemException;
+
 	public void deleteFolder(long folderId)
 		throws PortalException, SystemException;
 
@@ -148,6 +151,11 @@ public interface Repository {
 			int end, OrderByComparator obc)
 		throws PortalException, SystemException;
 
+	public List<Folder> getFolders(
+			long parentFolderId, int status, boolean includeMountFolders,
+			int start, int end, OrderByComparator obc)
+		throws PortalException, SystemException;
+
 	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
 			long folderId, int status, boolean includeMountFolders, int start,
 			int end, OrderByComparator obc)
@@ -169,6 +177,10 @@ public interface Repository {
 		throws PortalException, SystemException;
 
 	public int getFoldersCount(long parentFolderId, boolean includeMountfolders)
+		throws PortalException, SystemException;
+
+	public int getFoldersCount(
+			long parentFolderId, int status, boolean includeMountfolders)
 		throws PortalException, SystemException;
 
 	public int getFoldersFileEntriesCount(List<Long> folderIds, int status)
@@ -229,10 +241,12 @@ public interface Repository {
 			ServiceContext serviceContext)
 		throws PortalException, SystemException;
 
-	public Lock refreshFileEntryLock(String lockUuid, long expirationTime)
+	public Lock refreshFileEntryLock(
+			String lockUuid, long companyId, long expirationTime)
 		throws PortalException, SystemException;
 
-	public Lock refreshFolderLock(String lockUuid, long expirationTime)
+	public Lock refreshFolderLock(
+			String lockUuid, long companyId, long expirationTime)
 		throws PortalException, SystemException;
 
 	public void revertFileEntry(

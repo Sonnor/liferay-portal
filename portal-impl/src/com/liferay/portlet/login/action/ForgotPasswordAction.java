@@ -90,7 +90,7 @@ public class ForgotPasswordAction extends PortletAction {
 				e instanceof UserEmailAddressException ||
 				e instanceof UserReminderQueryException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 			}
 			else {
 				PortalUtil.sendError(e, actionRequest, actionResponse);
@@ -172,9 +172,7 @@ public class ForgotPasswordAction extends PortletAction {
 		}
 	}
 
-	protected User getUser(ActionRequest actionRequest)
-		throws Exception {
-
+	protected User getUser(ActionRequest actionRequest) throws Exception {
 		PortletSession portletSession = actionRequest.getPortletSession();
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
