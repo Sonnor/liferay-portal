@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -311,6 +310,7 @@ public class ShoppingItemPricePersistenceImpl extends BasePersistenceImpl<Shoppi
 		if (isNew || !ShoppingItemPriceModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((shoppingItemPriceModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_ITEMID.getColumnBitmask()) != 0) {
@@ -1096,8 +1096,6 @@ public class ShoppingItemPricePersistenceImpl extends BasePersistenceImpl<Shoppi
 	protected ShoppingOrderPersistence shoppingOrderPersistence;
 	@BeanReference(type = ShoppingOrderItemPersistence.class)
 	protected ShoppingOrderItemPersistence shoppingOrderItemPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_SHOPPINGITEMPRICE = "SELECT shoppingItemPrice FROM ShoppingItemPrice shoppingItemPrice";

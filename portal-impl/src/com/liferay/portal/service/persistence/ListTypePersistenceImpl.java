@@ -299,6 +299,7 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 		if (isNew || !ListTypeModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((listTypeModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_TYPE.getColumnBitmask()) != 0) {
@@ -1130,8 +1131,6 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 	protected MembershipRequestPersistence membershipRequestPersistence;
 	@BeanReference(type = OrganizationPersistence.class)
 	protected OrganizationPersistence organizationPersistence;
-	@BeanReference(type = OrgGroupPermissionPersistence.class)
-	protected OrgGroupPermissionPersistence orgGroupPermissionPersistence;
 	@BeanReference(type = OrgGroupRolePersistence.class)
 	protected OrgGroupRolePersistence orgGroupRolePersistence;
 	@BeanReference(type = OrgLaborPersistence.class)
@@ -1142,8 +1141,6 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 	protected PasswordPolicyRelPersistence passwordPolicyRelPersistence;
 	@BeanReference(type = PasswordTrackerPersistence.class)
 	protected PasswordTrackerPersistence passwordTrackerPersistence;
-	@BeanReference(type = PermissionPersistence.class)
-	protected PermissionPersistence permissionPersistence;
 	@BeanReference(type = PhonePersistence.class)
 	protected PhonePersistence phonePersistence;
 	@BeanReference(type = PluginSettingPersistence.class)
@@ -1164,16 +1161,12 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 	protected RepositoryPersistence repositoryPersistence;
 	@BeanReference(type = RepositoryEntryPersistence.class)
 	protected RepositoryEntryPersistence repositoryEntryPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = ResourceActionPersistence.class)
 	protected ResourceActionPersistence resourceActionPersistence;
 	@BeanReference(type = ResourceBlockPersistence.class)
 	protected ResourceBlockPersistence resourceBlockPersistence;
 	@BeanReference(type = ResourceBlockPermissionPersistence.class)
 	protected ResourceBlockPermissionPersistence resourceBlockPermissionPersistence;
-	@BeanReference(type = ResourceCodePersistence.class)
-	protected ResourceCodePersistence resourceCodePersistence;
 	@BeanReference(type = ResourcePermissionPersistence.class)
 	protected ResourcePermissionPersistence resourcePermissionPersistence;
 	@BeanReference(type = ResourceTypePermissionPersistence.class)

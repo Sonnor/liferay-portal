@@ -356,6 +356,7 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 		if (isNew || !UserIdMapperModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((userIdMapperModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_USERID.getColumnBitmask()) != 0) {
@@ -405,6 +406,7 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_U_T, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_U_T, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_U_T,
@@ -424,6 +426,7 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_T_E, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_T_E, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_T_E,
@@ -1373,13 +1376,14 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 	 *
 	 * @param userId the user ID
 	 * @param type the type
+	 * @return the user ID mapper that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByU_T(long userId, String type)
+	public UserIdMapper removeByU_T(long userId, String type)
 		throws NoSuchUserIdMapperException, SystemException {
 		UserIdMapper userIdMapper = findByU_T(userId, type);
 
-		remove(userIdMapper);
+		return remove(userIdMapper);
 	}
 
 	/**
@@ -1387,13 +1391,14 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 	 *
 	 * @param type the type
 	 * @param externalUserId the external user ID
+	 * @return the user ID mapper that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByT_E(String type, String externalUserId)
+	public UserIdMapper removeByT_E(String type, String externalUserId)
 		throws NoSuchUserIdMapperException, SystemException {
 		UserIdMapper userIdMapper = findByT_E(type, externalUserId);
 
-		remove(userIdMapper);
+		return remove(userIdMapper);
 	}
 
 	/**
@@ -1726,8 +1731,6 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 	protected MembershipRequestPersistence membershipRequestPersistence;
 	@BeanReference(type = OrganizationPersistence.class)
 	protected OrganizationPersistence organizationPersistence;
-	@BeanReference(type = OrgGroupPermissionPersistence.class)
-	protected OrgGroupPermissionPersistence orgGroupPermissionPersistence;
 	@BeanReference(type = OrgGroupRolePersistence.class)
 	protected OrgGroupRolePersistence orgGroupRolePersistence;
 	@BeanReference(type = OrgLaborPersistence.class)
@@ -1738,8 +1741,6 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 	protected PasswordPolicyRelPersistence passwordPolicyRelPersistence;
 	@BeanReference(type = PasswordTrackerPersistence.class)
 	protected PasswordTrackerPersistence passwordTrackerPersistence;
-	@BeanReference(type = PermissionPersistence.class)
-	protected PermissionPersistence permissionPersistence;
 	@BeanReference(type = PhonePersistence.class)
 	protected PhonePersistence phonePersistence;
 	@BeanReference(type = PluginSettingPersistence.class)
@@ -1760,16 +1761,12 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 	protected RepositoryPersistence repositoryPersistence;
 	@BeanReference(type = RepositoryEntryPersistence.class)
 	protected RepositoryEntryPersistence repositoryEntryPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = ResourceActionPersistence.class)
 	protected ResourceActionPersistence resourceActionPersistence;
 	@BeanReference(type = ResourceBlockPersistence.class)
 	protected ResourceBlockPersistence resourceBlockPersistence;
 	@BeanReference(type = ResourceBlockPermissionPersistence.class)
 	protected ResourceBlockPermissionPersistence resourceBlockPermissionPersistence;
-	@BeanReference(type = ResourceCodePersistence.class)
-	protected ResourceCodePersistence resourceCodePersistence;
 	@BeanReference(type = ResourcePermissionPersistence.class)
 	protected ResourcePermissionPersistence resourcePermissionPersistence;
 	@BeanReference(type = ResourceTypePermissionPersistence.class)

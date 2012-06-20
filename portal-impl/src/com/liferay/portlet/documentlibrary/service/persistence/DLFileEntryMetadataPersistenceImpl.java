@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -443,6 +442,7 @@ public class DLFileEntryMetadataPersistenceImpl extends BasePersistenceImpl<DLFi
 		if (isNew || !DLFileEntryMetadataModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((dlFileEntryMetadataModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID.getColumnBitmask()) != 0) {
@@ -551,6 +551,7 @@ public class DLFileEntryMetadataPersistenceImpl extends BasePersistenceImpl<DLFi
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_D_F, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_D_F, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_D_F,
@@ -568,6 +569,7 @@ public class DLFileEntryMetadataPersistenceImpl extends BasePersistenceImpl<DLFi
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_F_V, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_F_V, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_F_V,
@@ -2614,14 +2616,16 @@ public class DLFileEntryMetadataPersistenceImpl extends BasePersistenceImpl<DLFi
 	 *
 	 * @param DDMStructureId the d d m structure ID
 	 * @param fileVersionId the file version ID
+	 * @return the document library file entry metadata that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByD_F(long DDMStructureId, long fileVersionId)
+	public DLFileEntryMetadata removeByD_F(long DDMStructureId,
+		long fileVersionId)
 		throws NoSuchFileEntryMetadataException, SystemException {
 		DLFileEntryMetadata dlFileEntryMetadata = findByD_F(DDMStructureId,
 				fileVersionId);
 
-		remove(dlFileEntryMetadata);
+		return remove(dlFileEntryMetadata);
 	}
 
 	/**
@@ -2629,14 +2633,15 @@ public class DLFileEntryMetadataPersistenceImpl extends BasePersistenceImpl<DLFi
 	 *
 	 * @param fileEntryId the file entry ID
 	 * @param fileVersionId the file version ID
+	 * @return the document library file entry metadata that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByF_V(long fileEntryId, long fileVersionId)
+	public DLFileEntryMetadata removeByF_V(long fileEntryId, long fileVersionId)
 		throws NoSuchFileEntryMetadataException, SystemException {
 		DLFileEntryMetadata dlFileEntryMetadata = findByF_V(fileEntryId,
 				fileVersionId);
 
-		remove(dlFileEntryMetadata);
+		return remove(dlFileEntryMetadata);
 	}
 
 	/**
@@ -3081,8 +3086,6 @@ public class DLFileEntryMetadataPersistenceImpl extends BasePersistenceImpl<DLFi
 	protected DLFolderPersistence dlFolderPersistence;
 	@BeanReference(type = DLSyncPersistence.class)
 	protected DLSyncPersistence dlSyncPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	@BeanReference(type = DDMStructureLinkPersistence.class)

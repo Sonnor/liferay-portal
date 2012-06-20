@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -416,6 +415,7 @@ public class AssetLinkPersistenceImpl extends BasePersistenceImpl<AssetLink>
 		if (isNew || !AssetLinkModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((assetLinkModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_E1.getColumnBitmask()) != 0) {
@@ -540,6 +540,7 @@ public class AssetLinkPersistenceImpl extends BasePersistenceImpl<AssetLink>
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_E_E_T, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_E_E_T, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_E_E_T,
@@ -2876,13 +2877,14 @@ public class AssetLinkPersistenceImpl extends BasePersistenceImpl<AssetLink>
 	 * @param entryId1 the entry id1
 	 * @param entryId2 the entry id2
 	 * @param type the type
+	 * @return the asset link that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByE_E_T(long entryId1, long entryId2, int type)
+	public AssetLink removeByE_E_T(long entryId1, long entryId2, int type)
 		throws NoSuchLinkException, SystemException {
 		AssetLink assetLink = findByE_E_T(entryId1, entryId2, type);
 
-		remove(assetLink);
+		return remove(assetLink);
 	}
 
 	/**
@@ -3326,8 +3328,6 @@ public class AssetLinkPersistenceImpl extends BasePersistenceImpl<AssetLink>
 	protected AssetTagStatsPersistence assetTagStatsPersistence;
 	@BeanReference(type = AssetVocabularyPersistence.class)
 	protected AssetVocabularyPersistence assetVocabularyPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_ASSETLINK = "SELECT assetLink FROM AssetLink assetLink";

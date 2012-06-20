@@ -40,7 +40,6 @@ import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -338,6 +337,7 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 		if (isNew || !ExpandoColumnModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((expandoColumnModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_TABLEID.getColumnBitmask()) != 0) {
@@ -2940,8 +2940,6 @@ public class ExpandoColumnPersistenceImpl extends BasePersistenceImpl<ExpandoCol
 	protected ExpandoTablePersistence expandoTablePersistence;
 	@BeanReference(type = ExpandoValuePersistence.class)
 	protected ExpandoValuePersistence expandoValuePersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_EXPANDOCOLUMN = "SELECT expandoColumn FROM ExpandoColumn expandoColumn";

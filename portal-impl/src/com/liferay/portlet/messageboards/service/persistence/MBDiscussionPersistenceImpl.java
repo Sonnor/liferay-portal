@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -350,6 +349,7 @@ public class MBDiscussionPersistenceImpl extends BasePersistenceImpl<MBDiscussio
 		if (isNew || !MBDiscussionModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((mbDiscussionModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_CLASSNAMEID.getColumnBitmask()) != 0) {
@@ -395,6 +395,7 @@ public class MBDiscussionPersistenceImpl extends BasePersistenceImpl<MBDiscussio
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_THREADID, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_THREADID, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_THREADID,
@@ -410,6 +411,7 @@ public class MBDiscussionPersistenceImpl extends BasePersistenceImpl<MBDiscussio
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_C, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_C, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_C,
@@ -1304,13 +1306,14 @@ public class MBDiscussionPersistenceImpl extends BasePersistenceImpl<MBDiscussio
 	 * Removes the message boards discussion where threadId = &#63; from the database.
 	 *
 	 * @param threadId the thread ID
+	 * @return the message boards discussion that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByThreadId(long threadId)
+	public MBDiscussion removeByThreadId(long threadId)
 		throws NoSuchDiscussionException, SystemException {
 		MBDiscussion mbDiscussion = findByThreadId(threadId);
 
-		remove(mbDiscussion);
+		return remove(mbDiscussion);
 	}
 
 	/**
@@ -1318,13 +1321,14 @@ public class MBDiscussionPersistenceImpl extends BasePersistenceImpl<MBDiscussio
 	 *
 	 * @param classNameId the class name ID
 	 * @param classPK the class p k
+	 * @return the message boards discussion that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByC_C(long classNameId, long classPK)
+	public MBDiscussion removeByC_C(long classNameId, long classPK)
 		throws NoSuchDiscussionException, SystemException {
 		MBDiscussion mbDiscussion = findByC_C(classNameId, classPK);
 
-		remove(mbDiscussion);
+		return remove(mbDiscussion);
 	}
 
 	/**
@@ -1588,8 +1592,6 @@ public class MBDiscussionPersistenceImpl extends BasePersistenceImpl<MBDiscussio
 	protected MBThreadPersistence mbThreadPersistence;
 	@BeanReference(type = MBThreadFlagPersistence.class)
 	protected MBThreadFlagPersistence mbThreadFlagPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_MBDISCUSSION = "SELECT mbDiscussion FROM MBDiscussion mbDiscussion";

@@ -381,6 +381,7 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 		if (isNew || !ResourceBlockModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((resourceBlockModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_C_N.getColumnBitmask()) != 0) {
@@ -459,6 +460,7 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_G_N_P, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_G_N_P, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_G_N_P,
@@ -1772,15 +1774,16 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 	 * @param groupId the group ID
 	 * @param name the name
 	 * @param permissionsHash the permissions hash
+	 * @return the resource block that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByC_G_N_P(long companyId, long groupId, String name,
-		String permissionsHash)
+	public ResourceBlock removeByC_G_N_P(long companyId, long groupId,
+		String name, String permissionsHash)
 		throws NoSuchResourceBlockException, SystemException {
 		ResourceBlock resourceBlock = findByC_G_N_P(companyId, groupId, name,
 				permissionsHash);
 
-		remove(resourceBlock);
+		return remove(resourceBlock);
 	}
 
 	/**
@@ -2149,8 +2152,6 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 	protected MembershipRequestPersistence membershipRequestPersistence;
 	@BeanReference(type = OrganizationPersistence.class)
 	protected OrganizationPersistence organizationPersistence;
-	@BeanReference(type = OrgGroupPermissionPersistence.class)
-	protected OrgGroupPermissionPersistence orgGroupPermissionPersistence;
 	@BeanReference(type = OrgGroupRolePersistence.class)
 	protected OrgGroupRolePersistence orgGroupRolePersistence;
 	@BeanReference(type = OrgLaborPersistence.class)
@@ -2161,8 +2162,6 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 	protected PasswordPolicyRelPersistence passwordPolicyRelPersistence;
 	@BeanReference(type = PasswordTrackerPersistence.class)
 	protected PasswordTrackerPersistence passwordTrackerPersistence;
-	@BeanReference(type = PermissionPersistence.class)
-	protected PermissionPersistence permissionPersistence;
 	@BeanReference(type = PhonePersistence.class)
 	protected PhonePersistence phonePersistence;
 	@BeanReference(type = PluginSettingPersistence.class)
@@ -2183,16 +2182,12 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 	protected RepositoryPersistence repositoryPersistence;
 	@BeanReference(type = RepositoryEntryPersistence.class)
 	protected RepositoryEntryPersistence repositoryEntryPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = ResourceActionPersistence.class)
 	protected ResourceActionPersistence resourceActionPersistence;
 	@BeanReference(type = ResourceBlockPersistence.class)
 	protected ResourceBlockPersistence resourceBlockPersistence;
 	@BeanReference(type = ResourceBlockPermissionPersistence.class)
 	protected ResourceBlockPermissionPersistence resourceBlockPermissionPersistence;
-	@BeanReference(type = ResourceCodePersistence.class)
-	protected ResourceCodePersistence resourceCodePersistence;
 	@BeanReference(type = ResourcePermissionPersistence.class)
 	protected ResourcePermissionPersistence resourcePermissionPersistence;
 	@BeanReference(type = ResourceTypePermissionPersistence.class)

@@ -106,7 +106,7 @@ boolean useAssetEntryQuery = false;
 			}
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Document library search index is stale and contains document " + fileEntryId);
+					_log.warn("Documents and Media search index is stale and contains document " + fileEntryId);
 				}
 			}
 		}
@@ -122,7 +122,13 @@ boolean useAssetEntryQuery = false;
 		<br /><br />
 
 		<%
-			String[] mediaGalleryMimeTypes = null;
+		Folder folder = (Folder)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FOLDER);
+
+		long defaultFolderId = GetterUtil.getLong(preferences.getValue("rootFolderId", StringPool.BLANK), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+
+		long folderId = BeanParamUtil.getLong(folder, request, "folderId", defaultFolderId);
+
+		String[] mediaGalleryMimeTypes = null;
 		%>
 
 		<%@ include file="/html/portlet/image_gallery_display/view_images.jspf" %>

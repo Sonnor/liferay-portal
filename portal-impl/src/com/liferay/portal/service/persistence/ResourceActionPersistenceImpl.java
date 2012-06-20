@@ -329,6 +329,7 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 		if (isNew || !ResourceActionModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((resourceActionModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_NAME.getColumnBitmask()) != 0) {
@@ -370,6 +371,7 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_N_A, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_N_A, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_N_A,
@@ -1189,13 +1191,14 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 	 *
 	 * @param name the name
 	 * @param actionId the action ID
+	 * @return the resource action that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByN_A(String name, String actionId)
+	public ResourceAction removeByN_A(String name, String actionId)
 		throws NoSuchResourceActionException, SystemException {
 		ResourceAction resourceAction = findByN_A(name, actionId);
 
-		remove(resourceAction);
+		return remove(resourceAction);
 	}
 
 	/**
@@ -1470,8 +1473,6 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 	protected MembershipRequestPersistence membershipRequestPersistence;
 	@BeanReference(type = OrganizationPersistence.class)
 	protected OrganizationPersistence organizationPersistence;
-	@BeanReference(type = OrgGroupPermissionPersistence.class)
-	protected OrgGroupPermissionPersistence orgGroupPermissionPersistence;
 	@BeanReference(type = OrgGroupRolePersistence.class)
 	protected OrgGroupRolePersistence orgGroupRolePersistence;
 	@BeanReference(type = OrgLaborPersistence.class)
@@ -1482,8 +1483,6 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 	protected PasswordPolicyRelPersistence passwordPolicyRelPersistence;
 	@BeanReference(type = PasswordTrackerPersistence.class)
 	protected PasswordTrackerPersistence passwordTrackerPersistence;
-	@BeanReference(type = PermissionPersistence.class)
-	protected PermissionPersistence permissionPersistence;
 	@BeanReference(type = PhonePersistence.class)
 	protected PhonePersistence phonePersistence;
 	@BeanReference(type = PluginSettingPersistence.class)
@@ -1504,16 +1503,12 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 	protected RepositoryPersistence repositoryPersistence;
 	@BeanReference(type = RepositoryEntryPersistence.class)
 	protected RepositoryEntryPersistence repositoryEntryPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = ResourceActionPersistence.class)
 	protected ResourceActionPersistence resourceActionPersistence;
 	@BeanReference(type = ResourceBlockPersistence.class)
 	protected ResourceBlockPersistence resourceBlockPersistence;
 	@BeanReference(type = ResourceBlockPermissionPersistence.class)
 	protected ResourceBlockPermissionPersistence resourceBlockPermissionPersistence;
-	@BeanReference(type = ResourceCodePersistence.class)
-	protected ResourceCodePersistence resourceCodePersistence;
 	@BeanReference(type = ResourcePermissionPersistence.class)
 	protected ResourcePermissionPersistence resourcePermissionPersistence;
 	@BeanReference(type = ResourceTypePermissionPersistence.class)

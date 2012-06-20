@@ -342,6 +342,7 @@ public class ShardPersistenceImpl extends BasePersistenceImpl<Shard>
 				Object[] args = new Object[] { shardModelImpl.getOriginalName() };
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_NAME, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_NAME, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_NAME,
@@ -356,6 +357,7 @@ public class ShardPersistenceImpl extends BasePersistenceImpl<Shard>
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_C, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_C, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_C,
@@ -899,13 +901,14 @@ public class ShardPersistenceImpl extends BasePersistenceImpl<Shard>
 	 * Removes the shard where name = &#63; from the database.
 	 *
 	 * @param name the name
+	 * @return the shard that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByName(String name)
+	public Shard removeByName(String name)
 		throws NoSuchShardException, SystemException {
 		Shard shard = findByName(name);
 
-		remove(shard);
+		return remove(shard);
 	}
 
 	/**
@@ -913,13 +916,14 @@ public class ShardPersistenceImpl extends BasePersistenceImpl<Shard>
 	 *
 	 * @param classNameId the class name ID
 	 * @param classPK the class p k
+	 * @return the shard that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByC_C(long classNameId, long classPK)
+	public Shard removeByC_C(long classNameId, long classPK)
 		throws NoSuchShardException, SystemException {
 		Shard shard = findByC_C(classNameId, classPK);
 
-		remove(shard);
+		return remove(shard);
 	}
 
 	/**
@@ -1170,8 +1174,6 @@ public class ShardPersistenceImpl extends BasePersistenceImpl<Shard>
 	protected MembershipRequestPersistence membershipRequestPersistence;
 	@BeanReference(type = OrganizationPersistence.class)
 	protected OrganizationPersistence organizationPersistence;
-	@BeanReference(type = OrgGroupPermissionPersistence.class)
-	protected OrgGroupPermissionPersistence orgGroupPermissionPersistence;
 	@BeanReference(type = OrgGroupRolePersistence.class)
 	protected OrgGroupRolePersistence orgGroupRolePersistence;
 	@BeanReference(type = OrgLaborPersistence.class)
@@ -1182,8 +1184,6 @@ public class ShardPersistenceImpl extends BasePersistenceImpl<Shard>
 	protected PasswordPolicyRelPersistence passwordPolicyRelPersistence;
 	@BeanReference(type = PasswordTrackerPersistence.class)
 	protected PasswordTrackerPersistence passwordTrackerPersistence;
-	@BeanReference(type = PermissionPersistence.class)
-	protected PermissionPersistence permissionPersistence;
 	@BeanReference(type = PhonePersistence.class)
 	protected PhonePersistence phonePersistence;
 	@BeanReference(type = PluginSettingPersistence.class)
@@ -1204,16 +1204,12 @@ public class ShardPersistenceImpl extends BasePersistenceImpl<Shard>
 	protected RepositoryPersistence repositoryPersistence;
 	@BeanReference(type = RepositoryEntryPersistence.class)
 	protected RepositoryEntryPersistence repositoryEntryPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = ResourceActionPersistence.class)
 	protected ResourceActionPersistence resourceActionPersistence;
 	@BeanReference(type = ResourceBlockPersistence.class)
 	protected ResourceBlockPersistence resourceBlockPersistence;
 	@BeanReference(type = ResourceBlockPermissionPersistence.class)
 	protected ResourceBlockPermissionPersistence resourceBlockPermissionPersistence;
-	@BeanReference(type = ResourceCodePersistence.class)
-	protected ResourceCodePersistence resourceCodePersistence;
 	@BeanReference(type = ResourcePermissionPersistence.class)
 	protected ResourcePermissionPersistence resourcePermissionPersistence;
 	@BeanReference(type = ResourceTypePermissionPersistence.class)

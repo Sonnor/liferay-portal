@@ -40,7 +40,7 @@ import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
 import com.liferay.portal.service.persistence.CompanyPersistence;
-import com.liferay.portal.service.persistence.ResourcePersistence;
+import com.liferay.portal.service.persistence.SubscriptionPersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -380,6 +380,7 @@ public class ShoppingOrderPersistenceImpl extends BasePersistenceImpl<ShoppingOr
 		if (isNew || !ShoppingOrderModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((shoppingOrderModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID.getColumnBitmask()) != 0) {
@@ -445,6 +446,7 @@ public class ShoppingOrderPersistenceImpl extends BasePersistenceImpl<ShoppingOr
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_NUMBER, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_NUMBER, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_NUMBER,
@@ -458,6 +460,7 @@ public class ShoppingOrderPersistenceImpl extends BasePersistenceImpl<ShoppingOr
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_PPTXNID, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_PPTXNID, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_PPTXNID,
@@ -2529,26 +2532,28 @@ public class ShoppingOrderPersistenceImpl extends BasePersistenceImpl<ShoppingOr
 	 * Removes the shopping order where number = &#63; from the database.
 	 *
 	 * @param number the number
+	 * @return the shopping order that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByNumber(String number)
+	public ShoppingOrder removeByNumber(String number)
 		throws NoSuchOrderException, SystemException {
 		ShoppingOrder shoppingOrder = findByNumber(number);
 
-		remove(shoppingOrder);
+		return remove(shoppingOrder);
 	}
 
 	/**
 	 * Removes the shopping order where ppTxnId = &#63; from the database.
 	 *
 	 * @param ppTxnId the pp txn ID
+	 * @return the shopping order that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByPPTxnId(String ppTxnId)
+	public ShoppingOrder removeByPPTxnId(String ppTxnId)
 		throws NoSuchOrderException, SystemException {
 		ShoppingOrder shoppingOrder = findByPPTxnId(ppTxnId);
 
-		remove(shoppingOrder);
+		return remove(shoppingOrder);
 	}
 
 	/**
@@ -3043,8 +3048,8 @@ public class ShoppingOrderPersistenceImpl extends BasePersistenceImpl<ShoppingOr
 	protected ShoppingOrderItemPersistence shoppingOrderItemPersistence;
 	@BeanReference(type = CompanyPersistence.class)
 	protected CompanyPersistence companyPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
+	@BeanReference(type = SubscriptionPersistence.class)
+	protected SubscriptionPersistence subscriptionPersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	@BeanReference(type = MBMessagePersistence.class)
