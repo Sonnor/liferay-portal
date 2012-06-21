@@ -31,7 +31,7 @@ List<Portlet> portlets = (List<Portlet>)request.getAttribute(WebKeys.LAYOUT_PORT
 <%@ include file="/html/common/themes/bottom_portlet_resources_js.jspf" %>
 
 <%
-Set<String> runtimePortletIds = (Set<String>)request.getAttribute(WebKeys.RUNTIME_PORTLET_IDS);
+Set<String> runtimePortletIds = RuntimeTag.getRuntimePortletIDs(request);
 
 if ((runtimePortletIds != null) && !runtimePortletIds.isEmpty()) {
 	List<Portlet> runtimePortlets = new ArrayList<Portlet>();
@@ -67,6 +67,8 @@ if ((runtimePortletIds != null) && !runtimePortletIds.isEmpty()) {
 
 <%@ include file="/html/common/themes/bottom_js.jspf" %>
 
+<%@ include file="/html/common/themes/password_expiring_soon.jspf" %>
+
 <%@ include file="/html/common/themes/session_timeout.jspf" %>
 
 <%
@@ -76,7 +78,7 @@ ScriptTag.flushScriptData(pageContext);
 <%-- Raw Text --%>
 
 <%
-StringBundler pageBottomSB = (StringBundler)request.getAttribute(WebKeys.PAGE_BOTTOM);
+StringBundler pageBottomSB = OutputTag.getData(request, WebKeys.PAGE_BOTTOM);
 %>
 
 <c:if test="<%= pageBottomSB != null %>">

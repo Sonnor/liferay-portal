@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -371,6 +370,7 @@ public class RatingsEntryPersistenceImpl extends BasePersistenceImpl<RatingsEntr
 		if (isNew || !RatingsEntryModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((ratingsEntryModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_C_C.getColumnBitmask()) != 0) {
@@ -438,6 +438,7 @@ public class RatingsEntryPersistenceImpl extends BasePersistenceImpl<RatingsEntr
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_U_C_C, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_U_C_C, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_U_C_C,
@@ -1641,13 +1642,14 @@ public class RatingsEntryPersistenceImpl extends BasePersistenceImpl<RatingsEntr
 	 * @param userId the user ID
 	 * @param classNameId the class name ID
 	 * @param classPK the class p k
+	 * @return the ratings entry that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByU_C_C(long userId, long classNameId, long classPK)
-		throws NoSuchEntryException, SystemException {
+	public RatingsEntry removeByU_C_C(long userId, long classNameId,
+		long classPK) throws NoSuchEntryException, SystemException {
 		RatingsEntry ratingsEntry = findByU_C_C(userId, classNameId, classPK);
 
-		remove(ratingsEntry);
+		return remove(ratingsEntry);
 	}
 
 	/**
@@ -1936,8 +1938,6 @@ public class RatingsEntryPersistenceImpl extends BasePersistenceImpl<RatingsEntr
 	protected RatingsEntryPersistence ratingsEntryPersistence;
 	@BeanReference(type = RatingsStatsPersistence.class)
 	protected RatingsStatsPersistence ratingsStatsPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	@BeanReference(type = AssetEntryPersistence.class)

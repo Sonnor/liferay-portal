@@ -36,7 +36,7 @@ public class AddUserSOExpertiseTest extends BaseTestCase {
 					}
 
 					try {
-						if (selenium.isVisible("link=Control Panel")) {
+						if (selenium.isElementPresent("link=Control Panel")) {
 							break;
 						}
 					}
@@ -80,7 +80,7 @@ public class AddUserSOExpertiseTest extends BaseTestCase {
 					}
 
 					try {
-						if (selenium.isVisible("//a[@id='_125_expertiseLink']")) {
+						if (selenium.isVisible("//a[@id='_125_projectsLink']")) {
 							break;
 						}
 					}
@@ -91,9 +91,9 @@ public class AddUserSOExpertiseTest extends BaseTestCase {
 				}
 
 				assertTrue(selenium.isPartialText(
-						"//a[@id='_125_expertiseLink']", "Expertise"));
-				selenium.clickAt("//a[@id='_125_expertiseLink']",
-					RuntimeVariables.replace("Expertise"));
+						"//a[@id='_125_projectsLink']", "Projects"));
+				selenium.clickAt("//a[@id='_125_projectsLink']",
+					RuntimeVariables.replace("Projects"));
 
 				for (int second = 0;; second++) {
 					if (second >= 90) {
@@ -102,7 +102,7 @@ public class AddUserSOExpertiseTest extends BaseTestCase {
 
 					try {
 						if (selenium.isVisible(
-									"//input[@id='_125_projectsEntryTitle0']")) {
+									"//input[contains(@id,'_125_projectsEntryTitle')]")) {
 							break;
 						}
 					}
@@ -112,7 +112,7 @@ public class AddUserSOExpertiseTest extends BaseTestCase {
 					Thread.sleep(1000);
 				}
 
-				selenium.type("//input[@id='_125_projectsEntryTitle0']",
+				selenium.type("//input[contains(@id,'_125_projectsEntryTitle')]",
 					RuntimeVariables.replace("Expertise Title"));
 
 				for (int second = 0;; second++) {
@@ -122,7 +122,7 @@ public class AddUserSOExpertiseTest extends BaseTestCase {
 
 					try {
 						if (selenium.isPartialText(
-									"//select[@id='_125_projectsEntryStartDateMonth0']",
+									"//select[contains(@id,'_125_projectsEntryStartDateMonth')]",
 									"January")) {
 							break;
 						}
@@ -133,7 +133,7 @@ public class AddUserSOExpertiseTest extends BaseTestCase {
 					Thread.sleep(1000);
 				}
 
-				selenium.select("//select[@id='_125_projectsEntryStartDateMonth0']",
+				selenium.select("//select[contains(@id,'_125_projectsEntryStartDateMonth')]",
 					RuntimeVariables.replace("January"));
 				assertTrue(selenium.isElementPresent(
 						"//input[@id='_125_projectsEntryCurrent0Checkbox']"));
@@ -159,7 +159,7 @@ public class AddUserSOExpertiseTest extends BaseTestCase {
 
 					try {
 						if (selenium.isVisible(
-									"//textarea[@id='_125_projectsEntryDescription0']")) {
+									"//textarea[contains(@id,'_125_projectsEntryDescription')]")) {
 							break;
 						}
 					}
@@ -169,7 +169,7 @@ public class AddUserSOExpertiseTest extends BaseTestCase {
 					Thread.sleep(1000);
 				}
 
-				selenium.type("//textarea[@id='_125_projectsEntryDescription0']",
+				selenium.type("//textarea[contains(@id,'_125_projectsEntryDescription')]",
 					RuntimeVariables.replace("Expertise Description"));
 				selenium.clickAt("//input[@value='Save']",
 					RuntimeVariables.replace("Save"));

@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -333,6 +332,7 @@ public class ExpandoRowPersistenceImpl extends BasePersistenceImpl<ExpandoRow>
 		if (isNew || !ExpandoRowModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((expandoRowModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_TABLEID.getColumnBitmask()) != 0) {
@@ -373,6 +373,7 @@ public class ExpandoRowPersistenceImpl extends BasePersistenceImpl<ExpandoRow>
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_T_C, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_T_C, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_T_C,
@@ -1129,13 +1130,14 @@ public class ExpandoRowPersistenceImpl extends BasePersistenceImpl<ExpandoRow>
 	 *
 	 * @param tableId the table ID
 	 * @param classPK the class p k
+	 * @return the expando row that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByT_C(long tableId, long classPK)
+	public ExpandoRow removeByT_C(long tableId, long classPK)
 		throws NoSuchRowException, SystemException {
 		ExpandoRow expandoRow = findByT_C(tableId, classPK);
 
-		remove(expandoRow);
+		return remove(expandoRow);
 	}
 
 	/**
@@ -1337,8 +1339,6 @@ public class ExpandoRowPersistenceImpl extends BasePersistenceImpl<ExpandoRow>
 	protected ExpandoTablePersistence expandoTablePersistence;
 	@BeanReference(type = ExpandoValuePersistence.class)
 	protected ExpandoValuePersistence expandoValuePersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_EXPANDOROW = "SELECT expandoRow FROM ExpandoRow expandoRow";

@@ -393,6 +393,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		if (isNew || !RepositoryEntryModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((repositoryEntryModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID.getColumnBitmask()) != 0) {
@@ -460,6 +461,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
@@ -478,6 +480,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_R_M, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_R_M, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_R_M,
@@ -1791,13 +1794,14 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	 *
 	 * @param uuid the uuid
 	 * @param groupId the group ID
+	 * @return the repository entry that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByUUID_G(String uuid, long groupId)
+	public RepositoryEntry removeByUUID_G(String uuid, long groupId)
 		throws NoSuchRepositoryEntryException, SystemException {
 		RepositoryEntry repositoryEntry = findByUUID_G(uuid, groupId);
 
-		remove(repositoryEntry);
+		return remove(repositoryEntry);
 	}
 
 	/**
@@ -1818,13 +1822,14 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	 *
 	 * @param repositoryId the repository ID
 	 * @param mappedId the mapped ID
+	 * @return the repository entry that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByR_M(long repositoryId, String mappedId)
+	public RepositoryEntry removeByR_M(long repositoryId, String mappedId)
 		throws NoSuchRepositoryEntryException, SystemException {
 		RepositoryEntry repositoryEntry = findByR_M(repositoryId, mappedId);
 
-		remove(repositoryEntry);
+		return remove(repositoryEntry);
 	}
 
 	/**
@@ -2211,8 +2216,6 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	protected MembershipRequestPersistence membershipRequestPersistence;
 	@BeanReference(type = OrganizationPersistence.class)
 	protected OrganizationPersistence organizationPersistence;
-	@BeanReference(type = OrgGroupPermissionPersistence.class)
-	protected OrgGroupPermissionPersistence orgGroupPermissionPersistence;
 	@BeanReference(type = OrgGroupRolePersistence.class)
 	protected OrgGroupRolePersistence orgGroupRolePersistence;
 	@BeanReference(type = OrgLaborPersistence.class)
@@ -2223,8 +2226,6 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	protected PasswordPolicyRelPersistence passwordPolicyRelPersistence;
 	@BeanReference(type = PasswordTrackerPersistence.class)
 	protected PasswordTrackerPersistence passwordTrackerPersistence;
-	@BeanReference(type = PermissionPersistence.class)
-	protected PermissionPersistence permissionPersistence;
 	@BeanReference(type = PhonePersistence.class)
 	protected PhonePersistence phonePersistence;
 	@BeanReference(type = PluginSettingPersistence.class)
@@ -2245,16 +2246,12 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	protected RepositoryPersistence repositoryPersistence;
 	@BeanReference(type = RepositoryEntryPersistence.class)
 	protected RepositoryEntryPersistence repositoryEntryPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = ResourceActionPersistence.class)
 	protected ResourceActionPersistence resourceActionPersistence;
 	@BeanReference(type = ResourceBlockPersistence.class)
 	protected ResourceBlockPersistence resourceBlockPersistence;
 	@BeanReference(type = ResourceBlockPermissionPersistence.class)
 	protected ResourceBlockPermissionPersistence resourceBlockPermissionPersistence;
-	@BeanReference(type = ResourceCodePersistence.class)
-	protected ResourceCodePersistence resourceCodePersistence;
 	@BeanReference(type = ResourcePermissionPersistence.class)
 	protected ResourcePermissionPersistence resourcePermissionPersistence;
 	@BeanReference(type = ResourceTypePermissionPersistence.class)

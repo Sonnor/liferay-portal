@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -345,6 +344,7 @@ public class ExpandoTablePersistenceImpl extends BasePersistenceImpl<ExpandoTabl
 		if (isNew || !ExpandoTableModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((expandoTableModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_C_C.getColumnBitmask()) != 0) {
@@ -391,6 +391,7 @@ public class ExpandoTablePersistenceImpl extends BasePersistenceImpl<ExpandoTabl
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_C_N, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_C_N, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_C_N,
@@ -1206,13 +1207,14 @@ public class ExpandoTablePersistenceImpl extends BasePersistenceImpl<ExpandoTabl
 	 * @param companyId the company ID
 	 * @param classNameId the class name ID
 	 * @param name the name
+	 * @return the expando table that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByC_C_N(long companyId, long classNameId, String name)
-		throws NoSuchTableException, SystemException {
+	public ExpandoTable removeByC_C_N(long companyId, long classNameId,
+		String name) throws NoSuchTableException, SystemException {
 		ExpandoTable expandoTable = findByC_C_N(companyId, classNameId, name);
 
-		remove(expandoTable);
+		return remove(expandoTable);
 	}
 
 	/**
@@ -1438,8 +1440,6 @@ public class ExpandoTablePersistenceImpl extends BasePersistenceImpl<ExpandoTabl
 	protected ExpandoTablePersistence expandoTablePersistence;
 	@BeanReference(type = ExpandoValuePersistence.class)
 	protected ExpandoValuePersistence expandoValuePersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_EXPANDOTABLE = "SELECT expandoTable FROM ExpandoTable expandoTable";

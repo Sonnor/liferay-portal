@@ -39,7 +39,6 @@ import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
 import com.liferay.portal.service.persistence.GroupPersistence;
 import com.liferay.portal.service.persistence.LockPersistence;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -445,6 +444,7 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 		if (isNew || !SocialActivityCounterModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((socialActivityCounterModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_C_C.getColumnBitmask()) != 0) {
@@ -535,6 +535,7 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C_N_O_S,
 					args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_C_C_N_O_S,
 					args);
 
@@ -564,6 +565,7 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C_N_O_E,
 					args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_C_C_N_O_E,
 					args);
 
@@ -606,6 +608,7 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 		socialActivityCounterImpl.setGraceValue(socialActivityCounter.getGraceValue());
 		socialActivityCounterImpl.setStartPeriod(socialActivityCounter.getStartPeriod());
 		socialActivityCounterImpl.setEndPeriod(socialActivityCounter.getEndPeriod());
+		socialActivityCounterImpl.setActive(socialActivityCounter.isActive());
 
 		return socialActivityCounterImpl;
 	}
@@ -2100,15 +2103,16 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 	 * @param name the name
 	 * @param ownerType the owner type
 	 * @param startPeriod the start period
+	 * @return the social activity counter that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByG_C_C_N_O_S(long groupId, long classNameId,
-		long classPK, String name, int ownerType, int startPeriod)
-		throws NoSuchActivityCounterException, SystemException {
+	public SocialActivityCounter removeByG_C_C_N_O_S(long groupId,
+		long classNameId, long classPK, String name, int ownerType,
+		int startPeriod) throws NoSuchActivityCounterException, SystemException {
 		SocialActivityCounter socialActivityCounter = findByG_C_C_N_O_S(groupId,
 				classNameId, classPK, name, ownerType, startPeriod);
 
-		remove(socialActivityCounter);
+		return remove(socialActivityCounter);
 	}
 
 	/**
@@ -2120,15 +2124,16 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 	 * @param name the name
 	 * @param ownerType the owner type
 	 * @param endPeriod the end period
+	 * @return the social activity counter that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByG_C_C_N_O_E(long groupId, long classNameId,
-		long classPK, String name, int ownerType, int endPeriod)
-		throws NoSuchActivityCounterException, SystemException {
+	public SocialActivityCounter removeByG_C_C_N_O_E(long groupId,
+		long classNameId, long classPK, String name, int ownerType,
+		int endPeriod) throws NoSuchActivityCounterException, SystemException {
 		SocialActivityCounter socialActivityCounter = findByG_C_C_N_O_E(groupId,
 				classNameId, classPK, name, ownerType, endPeriod);
 
-		remove(socialActivityCounter);
+		return remove(socialActivityCounter);
 	}
 
 	/**
@@ -2545,8 +2550,6 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 	protected GroupPersistence groupPersistence;
 	@BeanReference(type = LockPersistence.class)
 	protected LockPersistence lockPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	@BeanReference(type = AssetEntryPersistence.class)

@@ -56,7 +56,7 @@ AssetEntry assetEntry = (AssetEntry)request.getAttribute("view_entry_content.jsp
 				</div>
 			</div>
 
-			<portlet:renderURL windowState="<%= WindowState.NORMAL.toString() %>" var="bookmarkURL">
+			<portlet:renderURL var="bookmarkURL" windowState="<%= WindowState.NORMAL.toString() %>">
 				<portlet:param name="struts_action" value="/blogs/view_entry" />
 				<portlet:param name="urlTitle" value="<%= entry.getUrlTitle() %>" />
 			</portlet:renderURL>
@@ -66,6 +66,7 @@ AssetEntry assetEntry = (AssetEntry)request.getAttribute("view_entry_content.jsp
 					displayStyle="<%= socialBookmarksDisplayStyle %>"
 					target="_blank"
 					title="<%= entry.getTitle() %>"
+					types="<%= socialBookmarksTypes %>"
 					url="<%= PortalUtil.getCanonicalURL(bookmarkURL.toString(), themeDisplay, layout) %>"
 				/>
 			</c:if>
@@ -116,13 +117,14 @@ AssetEntry assetEntry = (AssetEntry)request.getAttribute("view_entry_content.jsp
 
 								<portlet:actionURL var="deleteEntryURL">
 									<portlet:param name="struts_action" value="/blogs/edit_entry" />
-									<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.DELETE %>" />
+									<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.MOVE_TO_TRASH %>" />
 									<portlet:param name="redirect" value="<%= viewURL %>" />
 									<portlet:param name="entryId" value="<%= String.valueOf(entry.getEntryId()) %>" />
 								</portlet:actionURL>
 
 								<liferay-ui:icon-delete
 									label="<%= true %>"
+									trash="<%= true %>"
 									url="<%= deleteEntryURL %>"
 								/>
 							</td>
@@ -142,6 +144,9 @@ AssetEntry assetEntry = (AssetEntry)request.getAttribute("view_entry_content.jsp
 
 							if (Validator.isNotNull(entry.getSmallImageURL())) {
 								src = entry.getSmallImageURL();
+							}
+							else {
+								src = themeDisplay.getPathImage() + "/blogs/article?img_id=" + entry.getSmallImageId() + "&t=" + WebServerServletTokenUtil.getToken(entry.getSmallImageId());
 							}
 							%>
 
@@ -263,6 +268,7 @@ AssetEntry assetEntry = (AssetEntry)request.getAttribute("view_entry_content.jsp
 							displayStyle="<%= socialBookmarksDisplayStyle %>"
 							target="_blank"
 							title="<%= entry.getTitle() %>"
+							types="<%= socialBookmarksTypes %>"
 							url="<%= PortalUtil.getCanonicalURL(bookmarkURL.toString(), themeDisplay, layout) %>"
 						/>
 					</c:if>

@@ -462,7 +462,8 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 
 		// Indexer
 
-		Indexer indexer = IndexerRegistryUtil.getIndexer(WikiPage.class);
+		Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+			WikiPage.class);
 
 		indexer.delete(page);
 
@@ -585,7 +586,8 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	}
 
 	public void deleteTempPageAttachment(
-		long userId, String fileName, String tempFolderName) {
+			long userId, String fileName, String tempFolderName)
+		throws PortalException {
 
 		TempFileUtil.deleteTempFile(userId, fileName, tempFolderName);
 	}
@@ -908,9 +910,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		return wikiPagePersistence.countByNodeId(nodeId);
 	}
 
-	public int getPagesCount(long nodeId, boolean head)
-		throws SystemException {
-
+	public int getPagesCount(long nodeId, boolean head) throws SystemException {
 		return wikiPagePersistence.countByN_H_S(
 			nodeId, head, WorkflowConstants.STATUS_APPROVED);
 	}
@@ -926,9 +926,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		}
 	}
 
-	public int getPagesCount(long nodeId, String title)
-		throws SystemException {
-
+	public int getPagesCount(long nodeId, String title) throws SystemException {
 		return wikiPagePersistence.countByN_T(nodeId, title);
 	}
 
@@ -1095,7 +1093,8 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 
 		// Indexer
 
-		Indexer indexer = IndexerRegistryUtil.getIndexer(WikiPage.class);
+		Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+			WikiPage.class);
 
 		indexer.delete(
 			new Object[] {page.getCompanyId(), page.getNodeId(), title});
@@ -1406,7 +1405,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 
 			int activity = WikiActivityKeys.ADD_PAGE;
 
-			if (page.getVersion() > 1.1) {
+			if (page.getVersion() > WikiPageConstants.VERSION_DEFAULT) {
 				activity = WikiActivityKeys.UPDATE_PAGE;
 			}
 
@@ -1419,7 +1418,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 			if (!page.isMinorEdit() && NotificationThreadLocal.isEnabled()) {
 				boolean update = false;
 
-				if (page.getVersion() > 1.1) {
+				if (page.getVersion() > WikiPageConstants.VERSION_DEFAULT) {
 					update = true;
 				}
 
@@ -1428,7 +1427,8 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 
 			// Indexer
 
-			Indexer indexer = IndexerRegistryUtil.getIndexer(WikiPage.class);
+			Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+				WikiPage.class);
 
 			indexer.reindex(page);
 
@@ -1560,19 +1560,22 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 			boolean update)
 		throws PortalException, SystemException {
 
-		PortletPreferences preferences =
-			ServiceContextUtil.getPortletPreferences(serviceContext);
+		PortletPreferences preferences = null;
+
+		String rootPortletId = serviceContext.getRootPortletId();
+
+		if (Validator.isNull(rootPortletId) ||
+			rootPortletId.equals(PortletKeys.WIKI_DISPLAY)) {
+
+			preferences = ServiceContextUtil.getPortletPreferences(
+				serviceContext);
+		}
 
 		if (preferences == null) {
-			long ownerId = node.getGroupId();
-			int ownerType = PortletKeys.PREFS_OWNER_TYPE_GROUP;
-			long plid = PortletKeys.PREFS_PLID_SHARED;
-			String portletId = PortletKeys.WIKI;
-			String defaultPreferences = null;
-
 			preferences = portletPreferencesLocalService.getPreferences(
-				node.getCompanyId(), ownerId, ownerType, plid, portletId,
-				defaultPreferences);
+				node.getCompanyId(), node.getGroupId(),
+				PortletKeys.PREFS_OWNER_TYPE_GROUP,
+				PortletKeys.PREFS_PLID_SHARED, PortletKeys.WIKI_ADMIN, null);
 		}
 
 		if (!update && WikiUtil.getEmailPageAddedEnabled(preferences)) {

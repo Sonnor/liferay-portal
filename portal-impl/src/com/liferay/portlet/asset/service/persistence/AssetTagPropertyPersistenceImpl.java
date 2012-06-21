@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.persistence.BatchSessionUtil;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
@@ -384,6 +383,7 @@ public class AssetTagPropertyPersistenceImpl extends BasePersistenceImpl<AssetTa
 		if (isNew || !AssetTagPropertyModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((assetTagPropertyModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID.getColumnBitmask()) != 0) {
@@ -471,6 +471,7 @@ public class AssetTagPropertyPersistenceImpl extends BasePersistenceImpl<AssetTa
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_T_K, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_T_K, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_T_K,
@@ -2049,13 +2050,14 @@ public class AssetTagPropertyPersistenceImpl extends BasePersistenceImpl<AssetTa
 	 *
 	 * @param tagId the tag ID
 	 * @param key the key
+	 * @return the asset tag property that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByT_K(long tagId, String key)
+	public AssetTagProperty removeByT_K(long tagId, String key)
 		throws NoSuchTagPropertyException, SystemException {
 		AssetTagProperty assetTagProperty = findByT_K(tagId, key);
 
-		remove(assetTagProperty);
+		return remove(assetTagProperty);
 	}
 
 	/**
@@ -2400,8 +2402,6 @@ public class AssetTagPropertyPersistenceImpl extends BasePersistenceImpl<AssetTa
 	protected AssetTagStatsPersistence assetTagStatsPersistence;
 	@BeanReference(type = AssetVocabularyPersistence.class)
 	protected AssetVocabularyPersistence assetVocabularyPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
 	private static final String _SQL_SELECT_ASSETTAGPROPERTY = "SELECT assetTagProperty FROM AssetTagProperty assetTagProperty";

@@ -390,6 +390,7 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 		if (isNew || !UserGroupModelImpl.COLUMN_BITMASK_ENABLED) {
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 		}
+
 		else {
 			if ((userGroupModelImpl.getColumnBitmask() &
 					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID.getColumnBitmask()) != 0) {
@@ -455,6 +456,7 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 					};
 
 				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_N, args);
+
 				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_N, args);
 
 				FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_N,
@@ -2272,13 +2274,14 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 	 *
 	 * @param companyId the company ID
 	 * @param name the name
+	 * @return the user group that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void removeByC_N(long companyId, String name)
+	public UserGroup removeByC_N(long companyId, String name)
 		throws NoSuchUserGroupException, SystemException {
 		UserGroup userGroup = findByC_N(companyId, name);
 
-		remove(userGroup);
+		return remove(userGroup);
 	}
 
 	/**
@@ -4116,8 +4119,6 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 	protected MembershipRequestPersistence membershipRequestPersistence;
 	@BeanReference(type = OrganizationPersistence.class)
 	protected OrganizationPersistence organizationPersistence;
-	@BeanReference(type = OrgGroupPermissionPersistence.class)
-	protected OrgGroupPermissionPersistence orgGroupPermissionPersistence;
 	@BeanReference(type = OrgGroupRolePersistence.class)
 	protected OrgGroupRolePersistence orgGroupRolePersistence;
 	@BeanReference(type = OrgLaborPersistence.class)
@@ -4128,8 +4129,6 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 	protected PasswordPolicyRelPersistence passwordPolicyRelPersistence;
 	@BeanReference(type = PasswordTrackerPersistence.class)
 	protected PasswordTrackerPersistence passwordTrackerPersistence;
-	@BeanReference(type = PermissionPersistence.class)
-	protected PermissionPersistence permissionPersistence;
 	@BeanReference(type = PhonePersistence.class)
 	protected PhonePersistence phonePersistence;
 	@BeanReference(type = PluginSettingPersistence.class)
@@ -4150,16 +4149,12 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 	protected RepositoryPersistence repositoryPersistence;
 	@BeanReference(type = RepositoryEntryPersistence.class)
 	protected RepositoryEntryPersistence repositoryEntryPersistence;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
 	@BeanReference(type = ResourceActionPersistence.class)
 	protected ResourceActionPersistence resourceActionPersistence;
 	@BeanReference(type = ResourceBlockPersistence.class)
 	protected ResourceBlockPersistence resourceBlockPersistence;
 	@BeanReference(type = ResourceBlockPermissionPersistence.class)
 	protected ResourceBlockPermissionPersistence resourceBlockPermissionPersistence;
-	@BeanReference(type = ResourceCodePersistence.class)
-	protected ResourceCodePersistence resourceCodePersistence;
 	@BeanReference(type = ResourcePermissionPersistence.class)
 	protected ResourcePermissionPersistence resourcePermissionPersistence;
 	@BeanReference(type = ResourceTypePermissionPersistence.class)
